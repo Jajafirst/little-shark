@@ -1,152 +1,83 @@
 package gdd.scene;
 
-import gdd.AudioPlayer;
 import gdd.Game;
-import static gdd.Global.*;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import gdd.Global;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-import javax.swing.Timer;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 
-public class TitleScene extends JPanel {
+public class TitleScene extends JPanel implements Scene {
 
-    private int frame = 0;
-    private Image image;
-    private AudioPlayer audioPlayer;
-    private final Dimension d = new Dimension(BOARD_WIDTH, BOARD_HEIGHT);
-    private Timer timer;
+    private BufferedImage titleImage;
     private Game game;
 
     public TitleScene(Game game) {
         this.game = game;
-        // initBoard();
-        // initTitle();
-    }
 
-    private void initBoard() {
-
-    }
-
-    public void start() {
-        addKeyListener(new TAdapter());
         setFocusable(true);
-        setBackground(Color.black);
+        setPreferredSize(new Dimension(Global.BOARD_WIDTH, Global.BOARD_HEIGHT));
+        setBackground(Color.BLACK);
 
-        timer = new Timer(1000 / 60, new GameCycle());
-        timer.start();
-
-        initTitle();
-        initAudio();
-    }
-
-    public void stop() {
         try {
-            if (timer != null) {
-                timer.stop();
-            }
-
-            if (audioPlayer != null) {
-                audioPlayer.stop();
-            }
-        } catch (Exception e) {
-            System.err.println("Error closing audio player.");
-        }
-    }
-
-    private void initTitle() {
-        var ii = new ImageIcon(IMG_TITLE);
-        image = ii.getImage();
-
-    }
-
-    private void initAudio() {
-        try {
-            String filePath = "src/audio/title.wav";
-            audioPlayer = new AudioPlayer(filePath);
-
-            audioPlayer.play();
-        } catch (Exception e) {
-            System.err.println("Error with playing sound.");
+            URL imageUrl = getClass().getResource("/assets/background/title.png");
+            if (imageUrl == null) throw new IllegalArgumentException("❌ title.png not found.");
+            titleImage = ImageIO.read(imageUrl);
+        } catch (IOException | IllegalArgumentException e) {
+            System.err.println("❌ Error loading title image.");
+            e.printStackTrace();
         }
 
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    System.out.println("🔁 Switching to Scene1...");
+                    game.loadScene1();
+                }
+            }
+        });
     }
 
     @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        doDrawing(g);
+    public void start() {
+        System.out.println("✅ TitleScene started");
+        setVisible(true);
+        requestFocusInWindow();
     }
 
-    private void doDrawing(Graphics g) {
+    @Override
+    public void stop() {
+        setVisible(false);
+    }
 
-        g.setColor(Color.black);
-        g.fillRect(0, 0, d.width, d.height);
+    @Override
+    public void update() {}
 
-        g.drawImage(image, 0, -80, d.width, d.height, this);
+    @Override
+    public void draw(Graphics2D g) {
+        if (titleImage != null) {
+            int imgW = titleImage.getWidth();
+            int imgH = titleImage.getHeight();
+            int x = (Global.BOARD_WIDTH - imgW) / 2;
+            int y = (Global.BOARD_HEIGHT - imgH) / 2;
 
-        if (frame % 60 < 30) {
-            g.setColor(Color.red);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            g.drawImage(titleImage, x, y, null);
         } else {
-            g.setColor(Color.white);
-        }
-
-        g.setFont(g.getFont().deriveFont(32f));
-        String text = "Press SPACE to Start";
-        int stringWidth = g.getFontMetrics().stringWidth(text);
-        int x = (d.width - stringWidth) / 2;
-        // int stringHeight = g.getFontMetrics().getAscent();
-        // int y = (d.height + stringHeight) / 2;
-        g.drawString(text, x, 600);
-
-        g.setColor(Color.gray);
-        g.setFont(g.getFont().deriveFont(10f));
-        g.drawString("Game by Chayapol", 10, 650);
-
-        Toolkit.getDefaultToolkit().sync();
-    }
-
-    private void update() {
-        frame++;
-    }
-
-    private void doGameCycle() {
-        update();
-        repaint();
-    }
-
-    private class GameCycle implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            doGameCycle();
+            g.setColor(Color.WHITE);
+            g.drawString("⚠️ Title image not found.", 100, 100);
         }
     }
 
-    private class TAdapter extends KeyAdapter {
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-
-        }
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            System.out.println("Title.keyPressed: " + e.getKeyCode());
-            int key = e.getKeyCode();
-            if (key == KeyEvent.VK_SPACE) {
-                // Load the next scene
-                game.loadScene2();
-            }
-
-        }
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        draw((Graphics2D) g);
     }
 }

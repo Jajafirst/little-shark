@@ -1,71 +1,71 @@
-package gdd.sprite;
+// package gdd.sprite;
 
-import static gdd.Global.*;
-import javax.swing.ImageIcon;
+// import static gdd.Global.*;
+// import javax.swing.ImageIcon;
 
-public class Alien1 extends Enemy {
+// public class Alien1 extends Enemy {
 
-    private Bomb bomb;
+//     private Bomb bomb;
 
-    public Alien1(int x, int y) {
-        super(x, y);
-        // initEnemy(x, y);
-    }
+//     public Alien1(int x, int y) {
+//         super(x, y);
+//         // initEnemy(x, y);
+//     }
 
-    private void initEnemy(int x, int y) {
+//     private void initEnemy(int x, int y) {
 
-        this.x = x;
-        this.y = y;
+//         this.x = x;
+//         this.y = y;
 
-        bomb = new Bomb(x, y);
+//         bomb = new Bomb(x, y);
 
-        var ii = new ImageIcon(IMG_ENEMY);
+//         var ii = new ImageIcon(IMG_ENEMY);
 
-        // Scale the image to use the global scaling factor
-        var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
-                ii.getIconHeight() * SCALE_FACTOR,
-                java.awt.Image.SCALE_SMOOTH);
-        setImage(scaledImage);
-    }
+//         // Scale the image to use the global scaling factor
+//         var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
+//                 ii.getIconHeight() * SCALE_FACTOR,
+//                 java.awt.Image.SCALE_SMOOTH);
+//         setImage(scaledImage);
+//     }
 
-    public void act(int direction) {
-        this.y ++;
-    }
+//     public void act(int direction) {
+//         this.y ++;
+//     }
 
-    public Bomb getBomb() {
+//     public Bomb getBomb() {
 
-        return bomb;
-    }
+//         return bomb;
+//     }
 
-    public class Bomb extends Sprite {
+//     public class Bomb extends Sprite {
 
-        private boolean destroyed;
+//         private boolean destroyed;
 
-        public Bomb(int x, int y) {
+//         public Bomb(int x, int y) {
 
-            initBomb(x, y);
-        }
+//             initBomb(x, y);
+//         }
 
-        private void initBomb(int x, int y) {
+//         private void initBomb(int x, int y) {
 
-            setDestroyed(true);
+//             setDestroyed(true);
 
-            this.x = x;
-            this.y = y;
+//             this.x = x;
+//             this.y = y;
 
-            var bombImg = "src/images/bomb.png";
-            var ii = new ImageIcon(bombImg);
-            setImage(ii.getImage());
-        }
+//             var bombImg = "src/images/bomb.png";
+//             var ii = new ImageIcon(bombImg);
+//             setImage(ii.getImage());
+//         }
 
-        public void setDestroyed(boolean destroyed) {
+//         public void setDestroyed(boolean destroyed) {
 
-            this.destroyed = destroyed;
-        }
+//             this.destroyed = destroyed;
+//         }
 
-        public boolean isDestroyed() {
+//         public boolean isDestroyed() {
 
-            return destroyed;
-        }
-    }
-}
+//             return destroyed;
+//         }
+//     }
+// }
