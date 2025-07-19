@@ -4,7 +4,6 @@
 // - add sound effects
 // FIXME
 // - load Scene2 when end the round intead of pressing space 
-// - 
 
 package gdd.scene;
 

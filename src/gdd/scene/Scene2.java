@@ -53,7 +53,7 @@ public class Scene2 extends JPanel {
         ImageIcon titleIcon = new ImageIcon("./src/background/background2.png");
         staticBg2 = titleIcon.getImage();
         // Load parallax background
-        ImageIcon parallaxIcon = new ImageIcon("./src/background/parallax1.png");
+        ImageIcon parallaxIcon = new ImageIcon("./src/background/parallax2.png");
         parallaxBg2 = parallaxIcon.getImage();
 
         // Todo Auto-generated method stub
