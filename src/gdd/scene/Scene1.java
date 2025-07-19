@@ -2,6 +2,9 @@
 // - make player animation, 
 // - background scrolling, 
 // - add sound effects
+// FIXME
+// - load Scene2 when end the round intead of pressing space 
+// - 
 
 package gdd.scene;
 
@@ -29,8 +32,8 @@ public class Scene1 extends JPanel {
     private Image parallaxBg;   // parallax1.png
     private int parallaxX;
 
-    public Scene1() {   
-
+    public Scene1(Game game) {   
+        this.game = game;
         // try {
         //     staticBg = ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
         //     parallaxBg = ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
@@ -56,8 +59,8 @@ public class Scene1 extends JPanel {
 
     private void gameInit() {
         // Load static background
-        ImageIcon titleIcon = new ImageIcon("./src/background/background1.png");
-        staticBg = titleIcon.getImage();
+        ImageIcon backgroundIcon = new ImageIcon("./src/background/background1.png");
+        staticBg = backgroundIcon.getImage();
         // Load parallax background
         ImageIcon parallaxIcon = new ImageIcon("./src/background/parallax1.png");
         parallaxBg = parallaxIcon.getImage();
@@ -102,7 +105,12 @@ public class Scene1 extends JPanel {
     private class TAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            player.keyPressed(e.getKeyCode());
+            int key = e.getKeyCode();
+
+            if (key == KeyEvent.VK_SPACE) {
+                System.out.println("🔁 Switching to Scene2...");
+                game.loadScene2();
+            }
         }
 
         @Override

@@ -1,7 +1,11 @@
+// TODO
+// - call loadScene1() later
+
 package gdd;
 
-import gdd.scene.Scene1;
 import gdd.scene.TitleScene;
+import gdd.scene.Scene1;
+import gdd.scene.Scene2;
 
 import javax.swing.JFrame;
 
@@ -9,16 +13,15 @@ public class Game extends JFrame {
 
     private TitleScene titleScene;
     private Scene1 scene1;
+    private Scene2 scene2;
 
     public Game() {
         System.out.println("Game constructor called");
         initUI();
 
         titleScene = new TitleScene(this);
-        scene1 = new Scene1();
-
-        // add(titleScene);
-        // titleScene.start();
+        scene1 = new Scene1(this);
+        scene2 = new Scene2();
 
         loadTitle();
     }
@@ -31,6 +34,13 @@ public class Game extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
     }
+    public void loadTitle() {
+        getContentPane().removeAll();
+        add(titleScene);
+        titleScene.start();
+        revalidate();
+        repaint();
+    }
 
     public void loadScene1() {
         getContentPane().removeAll();
@@ -40,12 +50,14 @@ public class Game extends JFrame {
         revalidate();
         repaint();
     }
-
-    public void loadTitle() {
+    
+    public void loadScene2() {
         getContentPane().removeAll();
-        add(titleScene);
-        titleScene.start();
+        // titleScene.stop(); 
+        add(scene2);
+        scene2.start();
         revalidate();
         repaint();
     }
+
 }
