@@ -7,8 +7,8 @@ public class Global {
 
     public static final int SCALE_FACTOR = 3; // Scaling factor for sprites
 
-    public static final int BOARD_WIDTH = 716; // Doubled from 358
-    public static final int BOARD_HEIGHT = 700; // Doubled from 350
+    public static final int BOARD_WIDTH = 960; // Doubled from 358
+    public static final int BOARD_HEIGHT = 540; // Doubled from 350
     public static final int BORDER_RIGHT = 60; // Doubled from 30
     public static final int BORDER_LEFT = 10; // Doubled from 5
 

@@ -1,83 +1,82 @@
 package gdd.sprite;
 
-import static gdd.Global.*;
-import java.awt.Rectangle;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
 
-// test
+public class Player {
+    private int x;
+    private int y;
+    private int speedY;
 
-public class Player extends Sprite {
+    private Image image;
+    private final int WIDTH;
+    private final int HEIGHT;
 
-    private static final int START_X = 270;
-    private static final int START_Y = 540;
-    private int width;
-    private int currentSpeed = 2;
+    private boolean upPressed, downPressed;
 
-    private Rectangle bounds = new Rectangle(175,135,17,32);
+    public Player(int x, int y) {
+        this.x = x;
+        this.y = y;
+        speedY = 4;
 
-    public Player() {
-        initPlayer();
+        image = new ImageIcon("src/assets/sprites/player.png").getImage(); // Make sure this path is correct
+        WIDTH = image.getWidth(null);
+        HEIGHT = image.getHeight(null);
     }
 
-    private void initPlayer() {
-        var ii = new ImageIcon(IMG_PLAYER);
-
-        // Scale the image to use the global scaling factor
-        var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
-                ii.getIconHeight() * SCALE_FACTOR,
-                java.awt.Image.SCALE_SMOOTH);
-        setImage(scaledImage);
-
-        setX(START_X);
-        setY(START_Y);
-    }
-
-    public int getSpeed() {
-        return currentSpeed;
-    }
-
-    public int setSpeed(int speed) {
-        if (speed < 1) {
-            speed = 1; // Ensure speed is at least 1
+    public void update() {
+        if (upPressed) {
+            y -= speedY;
         }
-        this.currentSpeed = speed;
-        return currentSpeed;
-    }
-
-    public void act() {
-        x += dx;
-
-        if (x <= 2) {
-            x = 2;
+        if (downPressed) {
+            y += speedY;
         }
 
-        if (x >= BOARD_WIDTH - 2 * width) {
-            x = BOARD_WIDTH - 2 * width;
+        // Optional: limit movement to screen bounds
+        if (y < 0)
+            y = 0;
+        if (y > 600 - HEIGHT)
+            y = 600 - HEIGHT; // assuming screen height is 600
+    }
+
+    public void draw(Graphics2D g) {
+        g.drawImage(image, x, y, null);
+    }
+
+    public void keyPressed(int key) {
+        if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
+            upPressed = true;
+        }
+        if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
+            downPressed = true;
         }
     }
 
-    public void keyPressed(KeyEvent e) {
-        int key = e.getKeyCode();
-
-        if (key == KeyEvent.VK_LEFT) {
-            dx = -currentSpeed;
+    public void keyReleased(int key) {
+        if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
+            upPressed = false;
         }
-
-        if (key == KeyEvent.VK_RIGHT) {
-            dx = currentSpeed;
+        if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
+            downPressed = false;
         }
     }
 
-    public void keyReleased(KeyEvent e) {
-        int key = e.getKeyCode();
+    // Accessors if needed
+    public int getX() {
+        return x;
+    }
 
-        if (key == KeyEvent.VK_LEFT) {
-            dx = 0;
-        }
+    public int getY() {
+        return y;
+    }
 
-        if (key == KeyEvent.VK_RIGHT) {
-            dx = 0;
-        }
+    public int getWidth() {
+        return WIDTH;
+    }
+
+    public int getHeight() {
+        return HEIGHT;
     }
 }
