@@ -26,13 +26,13 @@ public class Scene1 extends JPanel implements Scene {
         setPreferredSize(new Dimension(1300, 800)); // Match your Global settings
         setBackground(Color.BLACK);
 
-        try {
-            staticBg = ImageIO.read(getClass().getResource("/assets/background/background1.png"));
-            parallaxBg = ImageIO.read(getClass().getResource("/assets/background/parallax1.png"));
-        } catch (IOException e) {
-            System.err.println("Error loading background images");
-            e.printStackTrace();
-        }
+        // try {
+        //     staticBg = ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
+        //     parallaxBg = ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
+        // } catch (IOException e) {
+        //     System.err.println("Error loading background images");
+        //     e.printStackTrace();
+        // }
 
         player = new Player(100, 300);
 

@@ -11,18 +11,22 @@ public class Game extends JFrame {
     private Scene1 scene1;
 
     public Game() {
+        System.out.println("Game constructor called");
         initUI();
 
         titleScene = new TitleScene(this);
         scene1 = new Scene1(this);
 
-        add(titleScene);
-        titleScene.start();
+        // add(titleScene);
+        // titleScene.start();
+
+        loadTitle();
     }
 
     private void initUI() {
         setTitle("Shark Shooter");
         setSize(Global.BOARD_WIDTH, Global.BOARD_HEIGHT);
+
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(null);
@@ -30,7 +34,7 @@ public class Game extends JFrame {
 
     public void loadScene1() {
         getContentPane().removeAll();
-        titleScene.stop();
+        // titleScene.stop(); 
         add(scene1);
         scene1.start();
         revalidate();
