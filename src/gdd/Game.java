@@ -15,7 +15,7 @@ public class Game extends JFrame {
         initUI();
 
         titleScene = new TitleScene(this);
-        scene1 = new Scene1(this);
+        scene1 = new Scene1();
 
         // add(titleScene);
         // titleScene.start();

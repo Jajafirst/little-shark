@@ -5,26 +5,26 @@ import gdd.sprite.Player;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import static gdd.Global.BOARD_HEIGHT;
+import static gdd.Global.BOARD_WIDTH;
+
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 import java.io.IOException;
 
-public class Scene1 extends JPanel implements Scene {
+public class Scene1 extends JPanel {
 
     private Game game;
     private Player player;
 
-    private BufferedImage staticBg;     // background1.png
-    private BufferedImage parallaxBg;   // parallax1.png
+    private Image staticBg;     // background1.png
+    private Image parallaxBg;   // parallax1.png
     private int parallaxX;
 
-    public Scene1(Game game) {
-        this.game = game;
-        setFocusable(true);
-        setPreferredSize(new Dimension(1300, 800)); // Match your Global settings
-        setBackground(Color.BLACK);
+    public Scene1() {   
 
         // try {
         //     staticBg = ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
@@ -34,58 +34,76 @@ public class Scene1 extends JPanel implements Scene {
         //     e.printStackTrace();
         // }
 
-        player = new Player(100, 300);
-
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                player.keyPressed(e.getKeyCode());
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                player.keyReleased(e.getKeyCode());
-            }
-        });
     }
 
     public void start() {
+        // requestFocusInWindow();
+
+        addKeyListener(new TAdapter());
+        setFocusable(true);
         requestFocusInWindow();
+        setBackground(Color.black);
+
+        gameInit();
+        System.out.println("✅ Scene1 started");
     }
 
-    @Override
+
+    private void gameInit() {
+        // Load static background
+        ImageIcon titleIcon = new ImageIcon("./src/background/background1.png");
+        staticBg = titleIcon.getImage();
+        // Load parallax background
+        ImageIcon parallaxIcon = new ImageIcon("./src/background/parallax1.png");
+        parallaxBg = parallaxIcon.getImage();
+
+        // TODO Auto-generated method stub
+        player = new Player(100, 300);
+    }
+
     public void update() {
-        parallaxX -= 1; // scroll speed
-        if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth()) {
-            parallaxX = 0;
-        }
-        player.update();
+        // parallaxX -= 1; // scroll speed
+        // if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth(null)) {
+        //     parallaxX = 0;
+        // }
+        // player.update();
     }
 
-    @Override
-    public void draw(Graphics2D g) {
+    public void draw(Graphics g) {
         // Draw static background first
         if (staticBg != null) {
-            g.drawImage(staticBg, 0, 0, null);
+            g.drawImage(staticBg, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
         }
 
         // Then draw scrolling parallax layer
+        // if (parallaxBg != null) {
+        //     int width = parallaxBg.getWidth(null);
+        //     g.drawImage(parallaxBg, parallaxX, 0, null);
+        //     g.drawImage(parallaxBg, parallaxX + width, 0, null);
+        // }
         if (parallaxBg != null) {
-            int width = parallaxBg.getWidth();
-            g.drawImage(parallaxBg, parallaxX, 0, null);
-            g.drawImage(parallaxBg, parallaxX + width, 0, null);
+            int width = parallaxBg.getWidth(null);
+            g.drawImage(parallaxBg, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
         }
 
-        // Then draw player
-        player.draw(g);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        draw((Graphics2D) g);
+        draw(g);
     }
 
-    @Override public void keyReleased(KeyEvent e) {}
-    @Override public void keyPressed(KeyEvent e) {}
+    private class TAdapter extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            player.keyPressed(e.getKeyCode());
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            player.keyReleased(e.getKeyCode());
+        }
+    }
+
 }
