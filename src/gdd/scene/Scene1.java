@@ -1,3 +1,8 @@
+// TODO 
+// - make player animation, 
+// - background scrolling, 
+// - add sound effects
+
 package gdd.scene;
 
 import gdd.Game;

@@ -1,3 +1,10 @@
+// TODO 
+// - Frame isn't used yet, but will be useful for animations later
+// - add sound background music
+
+// ADD 
+// - make title page more interactive, appealing.
+
 package gdd.scene;
 
 import gdd.Game;
