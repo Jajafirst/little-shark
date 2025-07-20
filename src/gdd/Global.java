@@ -5,7 +5,7 @@ public class Global {
         // Prevent instantiation
     }
 
-    public static final int SCALE_FACTOR = 3; // Scaling factor for sprites
+    public static final int SCALE_FACTOR = 1; // Scaling factor for sprites
 
     public static final int BOARD_WIDTH = 960; // Doubled from 358
     public static final int BOARD_HEIGHT = 540; // Doubled from 350
@@ -30,9 +30,10 @@ public class Global {
 
     // Images
     public static final String IMG_ENEMY = "src/images/alien.png";
-    public static final String IMG_PLAYER = "src/images/player.png";
+    public static final String IMG_PLAYER = "./src/assets/sprites/player.png";
+    public static final String IMG_PLAYER_PHASE2 = "./src/assets/sprites/playerPhase2.png";
     public static final String IMG_SHOT = "src/images/shot.png";
-    public static final String IMG_EXPLOSION = "src/images/explosion.png";
+    public static final String IMG_EXPLOSION = "src/imagses/explosion.png";
     public static final String IMG_TITLE = "src/images/title.png";
     public static final String IMG_POWERUP_SPEEDUP = "src/images/powerup-s.png";
 }

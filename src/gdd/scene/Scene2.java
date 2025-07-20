@@ -23,8 +23,7 @@ public class Scene2 extends JPanel {
     private Image parallaxBg2;   // parallax2.png
     private int parallaxX;
 
-    public Scene2() {   
-
+    public Scene2() {
         // try {
         //     staticBg = ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
         //     parallaxBg = ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
@@ -32,7 +31,6 @@ public class Scene2 extends JPanel {
         //     System.err.println("Error loading background images");
         //     e.printStackTrace();
         // }
-
     }
 
     public void start() {
@@ -50,14 +48,14 @@ public class Scene2 extends JPanel {
 
     private void gameInit() {
         // Load static background
-        ImageIcon titleIcon = new ImageIcon("./src/background/background2.png");
+        ImageIcon titleIcon = new ImageIcon("./src/assets/background/background2.png");
         staticBg2 = titleIcon.getImage();
         // Load parallax background
-        ImageIcon parallaxIcon = new ImageIcon("./src/background/parallax2.png");
+        ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/parallax3.png");
         parallaxBg2 = parallaxIcon.getImage();
 
         // Todo Auto-generated method stub
-        player = new Player(100, 300);
+        player = new Player(true);
     }
 
     public void update() {
@@ -84,7 +82,14 @@ public class Scene2 extends JPanel {
             int width = parallaxBg2.getWidth(null);
             g.drawImage(parallaxBg2, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
         }
+        drawPlayer(g);
 
+    }
+
+    public void drawPlayer(Graphics g) {
+        if (player != null) {
+            g.drawImage(player.getImage(), player.getX(), player.getY(), this);
+        }
     }
 
     @Override

@@ -33,6 +33,7 @@ public class Scene1 extends JPanel {
 
     public Scene1(Game game) {   
         this.game = game;
+        
         // try {
         //     staticBg = ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
         //     parallaxBg = ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
@@ -58,14 +59,14 @@ public class Scene1 extends JPanel {
 
     private void gameInit() {
         // Load static background
-        ImageIcon backgroundIcon = new ImageIcon("./src/background/background1.png");
+        ImageIcon backgroundIcon = new ImageIcon("./src/assets/background/background1.png");
         staticBg = backgroundIcon.getImage();
         // Load parallax background
-        ImageIcon parallaxIcon = new ImageIcon("./src/background/parallax1.png");
+        ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/parallax1.png");
         parallaxBg = parallaxIcon.getImage();
 
         // TODO Auto-generated method stub
-        player = new Player(100, 300);
+        player = new Player();
     }
 
     public void update() {
@@ -93,6 +94,14 @@ public class Scene1 extends JPanel {
             g.drawImage(parallaxBg, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
         }
 
+        drawPlayer(g);
+
+    }
+
+    public void drawPlayer(Graphics g) {
+        if (player != null) {
+            g.drawImage(player.getImage(), player.getX(), player.getY(), this);
+        }
     }
 
     @Override
