@@ -70,7 +70,7 @@ public class TitleScene extends JPanel {
     }
 
     private void gameInit() {
-        ImageIcon titleIcon = new ImageIcon("./src/background/title.png");
+        ImageIcon titleIcon = new ImageIcon(IMG_TITLE);
         titleImage = titleIcon.getImage();
     }
 
