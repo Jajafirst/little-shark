@@ -37,6 +37,9 @@ public class Scene2 extends JPanel {
 
     public void start() {
         addKeyListener(new TAdapter());
+        // requestFocusInWindow();
+
+        // addKeyListener(new TAdapter());
         setFocusable(true);
         requestFocusInWindow();
         setBackground(Color.black);
@@ -61,7 +64,7 @@ public class Scene2 extends JPanel {
         parallaxBg2 = parallaxIcon.getImage();
 
         // Todo Auto-generated method stub
-        player = new Player(true);
+        // player = new Player(true);
     }
 
     public void update() {
@@ -109,16 +112,16 @@ public class Scene2 extends JPanel {
         draw(g);
     }
 
-    private class TAdapter extends KeyAdapter {
-        @Override
-        public void keyPressed(KeyEvent e) {
-            player.keyPressed(e.getKeyCode());
-        }
+    // private class TAdapter extends KeyAdapter {
+    //     @Override
+    //     public void keyPressed(KeyEvent e) {
+    //         player.keyPressed(e.getKeyCode());
+    //     }
 
-        @Override
-        public void keyReleased(KeyEvent e) {
-            player.keyReleased(e.getKeyCode());
-        }
-    }
+    //     @Override
+    //     public void keyReleased(KeyEvent e) {
+    //         player.keyReleased(e.getKeyCode());
+    //     }
+    // }
 
 }

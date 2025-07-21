@@ -18,8 +18,11 @@ import javax.swing.*;
 
 import static gdd.Global.BOARD_HEIGHT;
 import static gdd.Global.BOARD_WIDTH;
+import static gdd.Global.DELAY;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.*;
@@ -33,7 +36,11 @@ public class Scene1 extends JPanel {
     private Image staticBg; // background1.png
     private Image parallaxBg; // parallax1.png
     private int parallaxX;
+
     private int currentSpeedLevel = 0;
+  
+    private Timer timer;
+
 
     private SpeedUp speedUp;
     private Random rand = new Random();
@@ -58,6 +65,9 @@ public class Scene1 extends JPanel {
         setFocusable(true);
         requestFocusInWindow();
         setBackground(Color.black);
+
+        timer = new Timer(DELAY, new GameCycle());
+        timer.start();
 
         gameInit();
         System.out.println("✅ Scene1 started");
@@ -116,7 +126,13 @@ public class Scene1 extends JPanel {
             }
         }
 
-   
+        // parallaxX -= 1; // scroll speed
+        // if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth(null)) {
+        //     parallaxX = 0;
+        // }
+        System.out.println("Updating Scene1...");
+        player.update();
+
     }
 
     // player.update();
@@ -137,7 +153,7 @@ public class Scene1 extends JPanel {
             g.drawImage(parallaxBg, parallaxX, y, null);
             g.drawImage(parallaxBg, parallaxX + width, y, null);
         }
-
+        // Do about items
         if (speedUp != null) {
             speedUp.draw(g, this);
         }
@@ -150,6 +166,21 @@ public class Scene1 extends JPanel {
         if (player != null) {
             g.drawImage(player.getImage(), player.getX(), player.getY(), this);
         }
+        
+    }
+
+    private void doGameCycle() {
+        update();
+        repaint();
+    }
+
+    private class GameCycle implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            doGameCycle();
+            System.out.println("Game cycle executed");
+        }
     }
 
     @Override
@@ -161,6 +192,10 @@ public class Scene1 extends JPanel {
     private class TAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
+            player.keyPressed(e);
+            int x = player.getX();
+            int y = player.getY();
+
             int key = e.getKeyCode();
 
             if (key == KeyEvent.VK_SPACE) {
@@ -171,7 +206,7 @@ public class Scene1 extends JPanel {
 
         @Override
         public void keyReleased(KeyEvent e) {
-            player.keyReleased(e.getKeyCode());
+            player.keyReleased(e);
         }
     }
 
