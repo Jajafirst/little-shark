@@ -19,21 +19,24 @@ public class Scene2 extends JPanel {
     private Game game;
     private Player player;
 
-    private Image staticBg2;     // background2.png
-    private Image parallaxBg2;   // parallax2.png
+    private Image staticBg2; // background2.png
+    private Image parallaxBg2; // parallax2.png
     private int parallaxX;
 
     public Scene2() {
         // try {
-        //     staticBg = ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
-        //     parallaxBg = ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
+        // staticBg =
+        // ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
+        // parallaxBg =
+        // ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
         // } catch (IOException e) {
-        //     System.err.println("Error loading background images");
-        //     e.printStackTrace();
+        // System.err.println("Error loading background images");
+        // e.printStackTrace();
         // }
     }
 
     public void start() {
+        addKeyListener(new TAdapter());
         // requestFocusInWindow();
 
         // addKeyListener(new TAdapter());
@@ -43,15 +46,21 @@ public class Scene2 extends JPanel {
 
         gameInit();
         System.out.println("✅ Scene2 started");
-    }
 
+        // 🔁 Game loop
+        Timer timer = new Timer(16, e -> {
+            update(); // move background
+            repaint(); // redraw screen
+        });
+        timer.start();
+    }
 
     private void gameInit() {
         // Load static background
         ImageIcon titleIcon = new ImageIcon("./src/assets/background/background2.png");
         staticBg2 = titleIcon.getImage();
         // Load parallax background
-        ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/parallax3.png");
+        ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/final-scene2.png");
         parallaxBg2 = parallaxIcon.getImage();
 
         // Todo Auto-generated method stub
@@ -59,31 +68,36 @@ public class Scene2 extends JPanel {
     }
 
     public void update() {
-        // parallaxX -= 1; // scroll speed
-        // if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth(null)) {
-        //     parallaxX = 0;
-        // }
-        // player.update();
+        parallaxX -= 1; // adjust speed if needed
+
+        if (parallaxBg2 != null) {
+            int width = parallaxBg2.getWidth(null);
+            if (parallaxX <= -width) {
+                parallaxX = 0;
+            }
+        }
+
     }
 
     public void draw(Graphics g) {
-        // Draw static background first
+        // 1. Draw static background (ocean) first
         if (staticBg2 != null) {
             g.drawImage(staticBg2, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
         }
 
-        // Then draw scrolling parallax layer
-        // if (parallaxBg != null) {
-        //     int width = parallaxBg.getWidth(null);
-        //     g.drawImage(parallaxBg, parallaxX, 0, null);
-        //     g.drawImage(parallaxBg, parallaxX + width, 0, null);
-        // }
+        // 2. Draw scrolling parallax background (sand)
         if (parallaxBg2 != null) {
             int width = parallaxBg2.getWidth(null);
-            g.drawImage(parallaxBg2, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
-        }
-        drawPlayer(g);
+            int height = parallaxBg2.getHeight(null);
+            int y = (BOARD_HEIGHT - height) / 2; // center vertically
 
+            // Draw two tiles for seamless looping
+            g.drawImage(parallaxBg2, parallaxX, y, null);
+            g.drawImage(parallaxBg2, parallaxX + width, y, null);
+        }
+
+        // 3. Draw player on top
+        drawPlayer(g);
     }
 
     public void drawPlayer(Graphics g) {

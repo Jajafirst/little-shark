@@ -10,6 +10,9 @@ package gdd.scene;
 import gdd.Game;
 import gdd.sprite.Player;
 
+import gdd.powerup.SpeedUp;
+import java.util.Random;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -29,28 +32,35 @@ public class Scene1 extends JPanel {
 
     private Game game;
     private Player player;
-
-    private Image staticBg;     // background1.png
-    private Image parallaxBg;   // parallax1.png
+    private Timer timer;
+    private Image staticBg; // background1.png
+    private Image parallaxBg; // parallax1.png
     private int parallaxX;
+
+    private int currentSpeedLevel = 0;
+  
     private Timer timer;
 
-    public Scene1(Game game) {   
+
+    private SpeedUp speedUp;
+    private Random rand = new Random();
+
+    public Scene1(Game game) {
         this.game = game;
-        
+
         // try {
-        //     staticBg = ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
-        //     parallaxBg = ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
+        // staticBg =
+        // ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
+        // parallaxBg =
+        // ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
         // } catch (IOException e) {
-        //     System.err.println("Error loading background images");
-        //     e.printStackTrace();
+        // System.err.println("Error loading background images");
+        // e.printStackTrace();
         // }
 
     }
 
     public void start() {
-        // requestFocusInWindow();
-
         addKeyListener(new TAdapter());
         setFocusable(true);
         requestFocusInWindow();
@@ -61,48 +71,95 @@ public class Scene1 extends JPanel {
 
         gameInit();
         System.out.println("✅ Scene1 started");
-    }
 
+        // 🔁 Game loop
+        Timer timer = new Timer(16, e -> {
+            update(); // move background
+            repaint(); // redraw screen
+        });
+        timer.start();
+    }
 
     private void gameInit() {
         // Load static background
         ImageIcon backgroundIcon = new ImageIcon("./src/assets/background/background1.png");
         staticBg = backgroundIcon.getImage();
         // Load parallax background
-        ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/parallax1.png");
+        ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/final-scene1.png");
         parallaxBg = parallaxIcon.getImage();
 
-        // TODO Auto-generated method stub
+        // speedUp = new SpeedUp();
+
         player = new Player();
     }
 
     public void update() {
+        // 🌊 Parallax background scroll
+        parallaxX -= 1;
+        if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth(null)) {
+            parallaxX = 0;
+        }
+
+        // ✅ Random spawn if not maxed level and no item exists
+        if (speedUp == null && currentSpeedLevel < 4 && rand.nextInt(200) == 0) {
+            speedUp = new SpeedUp(currentSpeedLevel + 1, BOARD_WIDTH, BOARD_HEIGHT);
+            System.out.println("🟢 Spawned SpeedUp LV" + (currentSpeedLevel + 1));
+        }
+
+        // ✅ Update speedUp if it's active
+        if (speedUp != null) {
+            speedUp.update();
+
+            Rectangle skillBox = speedUp.getBounds();
+
+            // 💡 Use estimated player box (128x128 or your sprite size)
+            Rectangle playerBox = new Rectangle(player.getX(), player.getY(), 128, 128);
+
+            if (skillBox.intersects(playerBox)) {
+                currentSpeedLevel++;
+                speedUp = null;
+                System.out.println("🎯 Collected LV" + currentSpeedLevel);
+            }
+
+            if (speedUp.getX() + speedUp.getWidth() < 0) {
+                speedUp = null;
+            }
+        }
+
         // parallaxX -= 1; // scroll speed
         // if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth(null)) {
         //     parallaxX = 0;
         // }
         System.out.println("Updating Scene1...");
         player.update();
+
     }
 
+    // player.update();
+
     public void draw(Graphics g) {
-        // Draw static background first
+        // 1. Draw static background (ocean) first
         if (staticBg != null) {
             g.drawImage(staticBg, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
         }
 
-        // Then draw scrolling parallax layer
-        // if (parallaxBg != null) {
-        //     int width = parallaxBg.getWidth(null);
-        //     g.drawImage(parallaxBg, parallaxX, 0, null);
-        //     g.drawImage(parallaxBg, parallaxX + width, 0, null);
-        // }
+        // 2. Draw scrolling parallax background (sand)
         if (parallaxBg != null) {
             int width = parallaxBg.getWidth(null);
-            g.drawImage(parallaxBg, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
-        }
-        drawPlayer(g);
+            int height = parallaxBg.getHeight(null);
+            int y = (BOARD_HEIGHT - height) / 2; // center vertically
 
+            // Draw two tiles for seamless looping
+            g.drawImage(parallaxBg, parallaxX, y, null);
+            g.drawImage(parallaxBg, parallaxX + width, y, null);
+        }
+        // Do about items
+        if (speedUp != null) {
+            speedUp.draw(g, this);
+        }
+
+        // 3. Draw player on top
+        drawPlayer(g);
     }
 
     public void drawPlayer(Graphics g) {
