@@ -1,8 +1,6 @@
 package gdd;
 
-import java.awt.EventQueue;
-
-
+// import java.awt.EventQueue;
 import javax.swing.SwingUtilities;
 
 public class Main {
