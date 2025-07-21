@@ -1,16 +1,16 @@
 // TODO 
-// - make player animation, 
-// - background scrolling, 
 // - add sound effects
 // FIXME
 // - load Scene2 when end the round intead of pressing space 
+
+// - fix timer, it makes player speed different in Scene1 and Scene2
 
 package gdd.scene;
 
 import gdd.Game;
 import gdd.sprite.Player;
 
-import gdd.powerup.SpeedUp;
+// import gdd.powerup.SpeedUp;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -32,32 +32,20 @@ public class Scene1 extends JPanel {
 
     private Game game;
     private Player player;
-    private Timer timer;
+    private Timer timer = null;
+
     private Image staticBg; // background1.png
     private Image parallaxBg; // parallax1.png
     private int parallaxX;
 
     private int currentSpeedLevel = 0;
-  
-    private Timer timer;
 
 
-    private SpeedUp speedUp;
+    // private SpeedUp speedUp;
     private Random rand = new Random();
 
     public Scene1(Game game) {
         this.game = game;
-
-        // try {
-        // staticBg =
-        // ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
-        // parallaxBg =
-        // ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
-        // } catch (IOException e) {
-        // System.err.println("Error loading background images");
-        // e.printStackTrace();
-        // }
-
     }
 
     public void start() {
@@ -81,9 +69,6 @@ public class Scene1 extends JPanel {
     }
 
     private void gameInit() {
-        // Load static background
-        ImageIcon backgroundIcon = new ImageIcon("./src/assets/background/background1.png");
-        staticBg = backgroundIcon.getImage();
         // Load parallax background
         ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/final-scene1.png");
         parallaxBg = parallaxIcon.getImage();
@@ -100,7 +85,7 @@ public class Scene1 extends JPanel {
             parallaxX = 0;
         }
 
-        // ✅ Random spawn if not maxed level and no item exists
+        /* // ✅ Random spawn if not maxed level and no item exists
         if (speedUp == null && currentSpeedLevel < 4 && rand.nextInt(200) == 0) {
             speedUp = new SpeedUp(currentSpeedLevel + 1, BOARD_WIDTH, BOARD_HEIGHT);
             System.out.println("🟢 Spawned SpeedUp LV" + (currentSpeedLevel + 1));
@@ -125,17 +110,10 @@ public class Scene1 extends JPanel {
                 speedUp = null;
             }
         }
-
-        // parallaxX -= 1; // scroll speed
-        // if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth(null)) {
-        //     parallaxX = 0;
-        // }
-        System.out.println("Updating Scene1...");
+ */
         player.update();
 
     }
-
-    // player.update();
 
     public void draw(Graphics g) {
         // 1. Draw static background (ocean) first
@@ -151,12 +129,12 @@ public class Scene1 extends JPanel {
 
             // Draw two tiles for seamless looping
             g.drawImage(parallaxBg, parallaxX, y, null);
-            g.drawImage(parallaxBg, parallaxX + width, y, null);
+            g.drawImage(parallaxBg, parallaxX + width - 4, y, null);
         }
         // Do about items
-        if (speedUp != null) {
+        /* if (speedUp != null) {
             speedUp.draw(g, this);
-        }
+        } */
 
         // 3. Draw player on top
         drawPlayer(g);
@@ -167,26 +145,6 @@ public class Scene1 extends JPanel {
             g.drawImage(player.getImage(), player.getX(), player.getY(), this);
         }
         
-    }
-
-    private void doGameCycle() {
-        update();
-        repaint();
-    }
-
-    private class GameCycle implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            doGameCycle();
-            System.out.println("Game cycle executed");
-        }
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        draw(g);
     }
 
     private class TAdapter extends KeyAdapter {
@@ -202,11 +160,33 @@ public class Scene1 extends JPanel {
                 System.out.println("🔁 Switching to Scene2...");
                 game.loadScene2();
             }
+
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
             player.keyReleased(e);
+        }
+    }
+
+    //_____________________________________________
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        draw(g);
+    }
+
+    private void doGameCycle() {
+        update();
+        repaint();
+    }
+
+    private class GameCycle implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            doGameCycle();
         }
     }
 

@@ -7,10 +7,12 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.Timer;
+
 import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
-    private int speedY = 5; // Added default speed
+    private static int speedY = 5; // Added default speed
     
     // private Image image;
     private static final int START_X = 60;
