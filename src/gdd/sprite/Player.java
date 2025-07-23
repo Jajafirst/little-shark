@@ -1,5 +1,6 @@
 // FIXME
 // - the switching animation is not smooth yet, maybe change to be switch case might help.
+// - when shooting, the system shoots but the player doesn't change to shooting animation immediately.
 
 package gdd.sprite;
 
@@ -24,7 +25,16 @@ public class Player extends Sprite {
     
     private boolean upPressed, downPressed;
     private boolean shoot;
-    
+
+    private String action = WALK; // Default action
+
+    private static final String WALK = "walk";
+    private static final String SHOOT = "shoot";
+    private static final String HURT = "hurt";
+    private static final String DIE = "die";
+
+    private boolean isShooting = false;
+
     // Animation
     public int frame = 0;
     private int animationDelay = 0;
@@ -56,7 +66,6 @@ public class Player extends Sprite {
 
     public Player() {
         initPlayer();
-        System.out.println("‼️ Player initialized");
     }
 
     private void initPlayer() {
@@ -82,26 +91,62 @@ public class Player extends Sprite {
         if (animationDelay >= ANIMATION_SPEED) {
             animationDelay = 0;
 
-            if (shoot) {
+
+            /* if (shoot) {
                 frame = (frame + 1) % 4 + 5; // Loop through frames 5-8 for shooting
                 clipNo = frame; // Use frames 5-9 for shooting
                 shoot = false; // Reset shoot after one frame
             } else {
                 frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
                 clipNo = frame; // Use frames 0-4 for walking
+            } */
+
+            switch (action) {
+                case WALK:
+                    frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
+                    clipNo = frame; // Use frames 0-4 for walking
+                    break;
+
+                case SHOOT:
+                    frame = (frame + 1) % 4 + 5; // Loop through frames 5-8 for shooting
+                    clipNo = frame; // Use frames 5-8 for shooting
+                    action = WALK; // Reset action to WALK after shooting
+                    break;
+
+
+                default:
+                    break;
             }
         }
     }
-
 
     // Input handling
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
-        if (key == KeyEvent.VK_RIGHT) {
-            shoot = true;
+        switch (key) {
+            case KeyEvent.VK_RIGHT:
+                action = SHOOT;
+                System.out.println("🏀Shooting action triggered");
+                break;
+
+            /* case KeyEvent.VK_UP:
+                action = WALK;
+                movement = UP; // Set movement to UP
+                break;
+
+            case KeyEvent.VK_DOWN:
+                action = WALK;
+                movement = DOWN; // Set movement to DOWN
+                break; */
+
+            default:
+                break;
         }
 
+        /* if (key == KeyEvent.VK_RIGHT) {
+            shoot = true;
+        } */
         if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
             upPressed = true;   
             System.out.println("Key pressed: " + KeyEvent.getKeyText(e.getKeyCode())); 
@@ -114,11 +159,26 @@ public class Player extends Sprite {
 
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
+        
         if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
             upPressed = false;
         }
         if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
             downPressed = false;
+        }
+
+        switch (key) {
+            /* case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+                action = WALK; // Reset action to WALK when UP or DOWN is released
+                break; */
+            
+            case KeyEvent.VK_RIGHT:
+                action = WALK; // Reset action to WALK when RIGHT is released
+                break;
+        
+            default:
+                break;
         }
     }
 
@@ -142,9 +202,11 @@ public class Player extends Sprite {
         BufferedImage bImage = toBufferedImage(image);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }
-    
-    // Either implement or remove this
+
+    @Override
     public void act() {
-        // Optional: Add behavior here if needed
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'act'");
     }
+    
 }
