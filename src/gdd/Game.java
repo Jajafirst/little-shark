@@ -21,7 +21,7 @@ public class Game extends JFrame {
 
         titleScene = new TitleScene(this);
         scene1 = new Scene1(this);
-        scene2 = new Scene2();
+        scene2 = new Scene2(this);
 
         loadTitle();
     }

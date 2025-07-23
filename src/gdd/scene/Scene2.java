@@ -7,15 +7,18 @@ import javax.swing.*;
 
 import static gdd.Global.BOARD_HEIGHT;
 import static gdd.Global.BOARD_WIDTH;
+import static gdd.Global.DELAY;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.*;
 import java.io.IOException;
 
 public class Scene2 extends JPanel {
-
+    
     private Game game;
     private Player player;
 
@@ -23,16 +26,10 @@ public class Scene2 extends JPanel {
     private Image parallaxBg2; // parallax2.png
     private int parallaxX;
 
-    public Scene2() {
-        // try {
-        // staticBg =
-        // ImageIO.read(getClass().getResource("/src/assets/background/background1.png"));
-        // parallaxBg =
-        // ImageIO.read(getClass().getResource("/src/assets/background/parallax1.png"));
-        // } catch (IOException e) {
-        // System.err.println("Error loading background images");
-        // e.printStackTrace();
-        // }
+    private Timer timer;
+
+    public Scene2(Game game) {
+        this.game = game;
     }
 
     public void start() {
@@ -41,27 +38,21 @@ public class Scene2 extends JPanel {
         requestFocusInWindow();
         setBackground(Color.black);
 
+        // 🔁 Game loop
+        timer = new Timer(DELAY, new GameCycle());
+        timer.start();
+
         gameInit();
         System.out.println("✅ Scene2 started");
-
-        // 🔁 Game loop
-        Timer timer = new Timer(16, e -> {
-            update(); // move background
-            repaint(); // redraw screen
-        });
-        timer.start();
     }
 
     private void gameInit() {
-        // Load static background
-        ImageIcon titleIcon = new ImageIcon("./src/assets/background/background2.png");
-        staticBg2 = titleIcon.getImage();
         // Load parallax background
         ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/final-scene2.png");
         parallaxBg2 = parallaxIcon.getImage();
 
-        // Todo Auto-generated method stub
-        player = new Player(true);
+        player = new Player();
+        
     }
 
     public void update() {
@@ -74,6 +65,8 @@ public class Scene2 extends JPanel {
             }
         }
 
+        System.out.println("Updating Scene2...");
+        player.update();
     }
 
     public void draw(Graphics g) {
@@ -90,16 +83,35 @@ public class Scene2 extends JPanel {
 
             // Draw two tiles for seamless looping
             g.drawImage(parallaxBg2, parallaxX, y, null);
-            g.drawImage(parallaxBg2, parallaxX + width, y, null);
+            g.drawImage(parallaxBg2, parallaxX + width - 4, y, null);
         }
 
         // 3. Draw player on top
         drawPlayer(g);
+        player.updatePlayer(true);
     }
 
     public void drawPlayer(Graphics g) {
         if (player != null) {
             g.drawImage(player.getImage(), player.getX(), player.getY(), this);
+        }
+    }
+
+    // _____________________________________________
+
+    private class TAdapter extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            player.keyPressed(e);
+            int x = player.getX();
+            int y = player.getY();
+
+            int key = e.getKeyCode();
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            player.keyReleased(e);
         }
     }
 
@@ -109,15 +121,17 @@ public class Scene2 extends JPanel {
         draw(g);
     }
 
-    private class TAdapter extends KeyAdapter {
-        @Override
-        public void keyPressed(KeyEvent e) {
-            player.keyPressed(e.getKeyCode());
-        }
+    private void doGameCycle() {
+        update();
+        repaint();
+    }
+
+    private class GameCycle implements ActionListener {
 
         @Override
-        public void keyReleased(KeyEvent e) {
-            player.keyReleased(e.getKeyCode());
+        public void actionPerformed(ActionEvent e) {
+            doGameCycle();
+            System.out.println("Game cycle executed");
         }
     }
 
