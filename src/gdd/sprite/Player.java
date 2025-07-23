@@ -31,18 +31,27 @@ public class Player extends Sprite {
     private final int ANIMATION_SPEED = 8; // Higher = slower animation
     private int clipNo = 0;
     private final Rectangle[] clips = new Rectangle[] {
-        new Rectangle(0, 0, 120, 64),   // Frame 0
-        new Rectangle(120, 0, 120, 64), // Frame 1
-        new Rectangle(240, 0, 120, 64), // Frame 2
-        new Rectangle(360, 0, 120, 64), // Frame 3
-        new Rectangle(480, 0, 120, 64), // Frame 4
-
         // Walking
-        new Rectangle(0, 64, 120, 64),  // Frame 5
-        new Rectangle(120, 64, 120, 64),  // Frame 6
-        new Rectangle(240, 64, 120, 64),  // Frame 7
-        new Rectangle(360, 64, 120, 64),  // Frame 8
-        new Rectangle(480, 64, 120, 64)   // Frame 9
+        new Rectangle(0, 504, 120, 63),  // Frame 0
+        new Rectangle(120, 504, 120, 63),  // Frame 1
+        new Rectangle(240, 504, 120, 63),  // Frame 2
+        new Rectangle(360, 504, 120, 63),  // Frame 3
+        new Rectangle(480, 504, 120, 63),  // Frame 4
+
+        // Shooting
+        new Rectangle(0, 61, 120, 61),  // Frame 5
+        new Rectangle(120, 61, 120, 61), // Frame 6
+        new Rectangle(240, 61, 120, 61), // Frame 7
+        new Rectangle(360, 61, 120, 61), // Frame 8
+
+        // hurting
+        new Rectangle(0, 321, 120, 62), // Frame 9
+        new Rectangle(120, 321, 120, 62), // Frame 10
+
+        //dying
+        new Rectangle(0, 214, 120, 81), // Frame 11
+        new Rectangle(120, 214, 120, 81), // Frame 12
+
     };
 
     public Player() {
@@ -74,12 +83,12 @@ public class Player extends Sprite {
             animationDelay = 0;
 
             if (shoot) {
-                frame = (frame + 1) % 5; // Loop through frames 0-4
-                clipNo = frame; // Use frames 0-4 for shooting
+                frame = (frame + 1) % 4 + 5; // Loop through frames 5-8 for shooting
+                clipNo = frame; // Use frames 5-9 for shooting
                 shoot = false; // Reset shoot after one frame
             } else {
-                frame = (frame + 1) % 5 + 5; // Loop through frames 5-9 for walking
-                clipNo = frame; // Use frames 5-9 for walking
+                frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
+                clipNo = frame; // Use frames 0-4 for walking
             }
         }
     }
