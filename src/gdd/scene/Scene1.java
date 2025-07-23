@@ -3,8 +3,6 @@
 // FIXME
 // - load Scene2 when end the round intead of pressing space 
 
-// - fix timer, it makes player speed different in Scene1 and Scene2
-
 package gdd.scene;
 
 import gdd.Game;
@@ -32,7 +30,7 @@ public class Scene1 extends JPanel {
 
     private Game game;
     private Player player;
-    private Timer timer = null;
+    private Timer timer;
 
     private Image staticBg; // background1.png
     private Image parallaxBg; // parallax1.png
@@ -54,17 +52,11 @@ public class Scene1 extends JPanel {
         requestFocusInWindow();
         setBackground(Color.black);
 
-        timer = new Timer(DELAY, new GameCycle());
-        timer.start();
-
+        
         gameInit();
         System.out.println("✅ Scene1 started");
-
-        // 🔁 Game loop
-        Timer timer = new Timer(16, e -> {
-            update(); // move background
-            repaint(); // redraw screen
-        });
+        
+        timer = new Timer(DELAY, new GameCycle());
         timer.start();
     }
 

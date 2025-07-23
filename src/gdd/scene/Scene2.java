@@ -38,12 +38,12 @@ public class Scene2 extends JPanel {
         requestFocusInWindow();
         setBackground(Color.black);
 
+        gameInit();
+        System.out.println("✅ Scene2 started");
+        
         // 🔁 Game loop
         timer = new Timer(DELAY, new GameCycle());
         timer.start();
-
-        gameInit();
-        System.out.println("✅ Scene2 started");
     }
 
     private void gameInit() {

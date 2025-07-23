@@ -12,7 +12,7 @@ import java.util.Timer;
 import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
-    private static int speedY = 5; // Added default speed
+    private static final int speedY = 5; // Added default speed
     
     // private Image image;
     private static final int START_X = 60;
