@@ -55,12 +55,15 @@ public class Player extends Sprite {
         new Rectangle(360, 61, 120, 61), // Frame 8
 
         // hurting
-        new Rectangle(0, 321, 120, 62), // Frame 9
-        new Rectangle(120, 321, 120, 62), // Frame 10
+        new Rectangle(0, 322, 120, 62), // Frame 9
+        new Rectangle(120, 322, 120, 62), // Frame 10
 
         //dying
-        new Rectangle(0, 214, 120, 81), // Frame 11
-        new Rectangle(120, 214, 120, 81), // Frame 12
+        new Rectangle(0, 241, 120, 81), // Frame 11
+        new Rectangle(120, 241, 120, 81), // Frame 12
+        new Rectangle(240, 241, 120, 81), // Frame 13
+        new Rectangle(360, 241, 120, 81), // Frame 14
+        new Rectangle(480, 241, 120, 81) // Frame 15
 
     };
 
@@ -113,6 +116,10 @@ public class Player extends Sprite {
                     action = WALK; // Reset action to WALK after shooting
                     break;
 
+                case HURT:
+                    frame = (frame + 1) % 2 + 9; // Loop through frames 9-15 for hurting
+                    clipNo = frame; // Use frames 9-15 for hurting
+                    break;
 
                 default:
                     break;
@@ -130,23 +137,14 @@ public class Player extends Sprite {
                 System.out.println("🏀Shooting action triggered");
                 break;
 
-            /* case KeyEvent.VK_UP:
-                action = WALK;
-                movement = UP; // Set movement to UP
+            case KeyEvent.VK_1:
+                action = HURT;
                 break;
-
-            case KeyEvent.VK_DOWN:
-                action = WALK;
-                movement = DOWN; // Set movement to DOWN
-                break; */
-
+                
             default:
                 break;
         }
 
-        /* if (key == KeyEvent.VK_RIGHT) {
-            shoot = true;
-        } */
         if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
             upPressed = true;   
             System.out.println("Key pressed: " + KeyEvent.getKeyText(e.getKeyCode())); 
