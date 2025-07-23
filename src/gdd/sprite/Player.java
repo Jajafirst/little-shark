@@ -13,25 +13,25 @@ import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
     private static int speedY = 5; // Added default speed
-    
+
     // private Image image;
     private static final int START_X = 60;
     private static final int START_Y = 250;
     private static final int SCREEN_HEIGHT = 500; // Example value, adjust as needed
-    
+
     private boolean upPressed, downPressed;
-    
+
     // Animation
     private int frame = 0;
     private int animationDelay = 0;
     private final int ANIMATION_SPEED = 8; // Higher = slower animation
     private int clipNo = 0;
     private final Rectangle[] clips = new Rectangle[] {
-        new Rectangle(0, 0, 120, 64),   // Frame 0
-        new Rectangle(120, 0, 120, 64), // Frame 1
-        new Rectangle(240, 0, 120, 64), // Frame 2
-        new Rectangle(360, 0, 120, 64), // Frame 3
-        new Rectangle(480, 0, 120, 64)  // Frame 4
+            new Rectangle(0, 0, 120, 64), // Frame 0
+            new Rectangle(120, 0, 120, 64), // Frame 1
+            new Rectangle(240, 0, 120, 64), // Frame 2
+            new Rectangle(360, 0, 120, 64), // Frame 3
+            new Rectangle(480, 0, 120, 64) // Frame 4
     };
 
     public Player() {
@@ -49,7 +49,7 @@ public class Player extends Sprite {
         setY(START_Y);
 
     }
-    
+
     public void update() {
         if (upPressed) {
             y = Math.max(0, y - speedY);
@@ -67,13 +67,12 @@ public class Player extends Sprite {
         }
     }
 
-
     // Input handling
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
-            upPressed = true;   
-            System.out.println("Key pressed: " + KeyEvent.getKeyText(e.getKeyCode())); 
+            upPressed = true;
+            System.out.println("Key pressed: " + KeyEvent.getKeyText(e.getKeyCode()));
         }
         if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
             downPressed = true;
@@ -97,23 +96,33 @@ public class Player extends Sprite {
     }
 
     // Getters and setters
-    public int getFrame() { return frame; }
-    
+    public int getFrame() {
+        return frame;
+    }
+
     @Override
-    public int getHeight() { return clips[clipNo].height; }
-    
+    public int getHeight() {
+        return clips[clipNo].height;
+    }
+
     @Override
-    public int getWidth() { return clips[clipNo].width; }
-    
+    public int getWidth() {
+        return clips[clipNo].width;
+    }
+
     @Override
     public Image getImage() {
         Rectangle bound = clips[clipNo];
         BufferedImage bImage = toBufferedImage(image);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }
-    
+
     // Either implement or remove this
     public void act() {
         // Optional: Add behavior here if needed
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, 128, 128); // or whatever size your player sprite is
     }
 }
