@@ -5,26 +5,27 @@
 
 package gdd.scene;
 
-import gdd.Game;
-import gdd.sprite.Player;
-
-// import gdd.powerup.SpeedUp;
-import java.util.Random;
-
-import javax.imageio.ImageIO;
 import javax.swing.*;
-
-import static gdd.Global.BOARD_HEIGHT;
-import static gdd.Global.BOARD_WIDTH;
-import static gdd.Global.DELAY;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.image.*;
-import java.io.IOException;
+
+import gdd.sprite.Enemy1;
+import gdd.sprite.Enemy2;
+import gdd.sprite.Player;
+import gdd.powerup.SpeedUp;
+import gdd.Game;
+
+import static gdd.Global.BOARD_HEIGHT;
+import static gdd.Global.BOARD_WIDTH;
+import static gdd.Global.DELAY;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Iterator;
 
 public class Scene1 extends JPanel {
 
@@ -32,14 +33,32 @@ public class Scene1 extends JPanel {
     private Player player;
     private Timer timer;
 
-    private Image staticBg; // background1.png
-    private Image parallaxBg; // parallax1.png
+    // Background and Parallax
+    private Image staticBg;
+    private Image parallaxBg;
     private int parallaxX;
 
+    // SpeedUp Icon
+    private static int lastCollectedLevel = 0;
+    private SpeedUp speedUp;
+    private Image speedIcon;
     private int currentSpeedLevel = 0;
+    private boolean firstSpawned = false;
+    private long lastSpawnTime = 0;
+    private static final long SPAWN_INTERVAL = 6_000; // 1 minute in milliseconds
 
+    // Enemies
+    private List<Enemy2> enemies = new ArrayList<>();
+    private List<Enemy1> enemy1List = new ArrayList<>();
 
-    // private SpeedUp speedUp;
+    public static void setCollectedLevel(int level) {
+        lastCollectedLevel = level;
+    }
+
+    public static int getCollectedLevel() {
+        return lastCollectedLevel;
+    }
+
     private Random rand = new Random();
 
     public Scene1(Game game) {
@@ -66,77 +85,147 @@ public class Scene1 extends JPanel {
         parallaxBg = parallaxIcon.getImage();
 
         // speedUp = new SpeedUp();
+        ImageIcon speedIconImg = new ImageIcon("./src/assets/sprites/speedSkill1.png");
+        speedIcon = speedIconImg.getImage();
 
         player = new Player();
     }
 
     public void update() {
-        // 🌊 Parallax background scroll
+        // Scroll parallax background
         parallaxX -= 1;
         if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth(null)) {
             parallaxX = 0;
         }
 
-        /* // ✅ Random spawn if not maxed level and no item exists
-        if (speedUp == null && currentSpeedLevel < 4 && rand.nextInt(200) == 0) {
-            speedUp = new SpeedUp(currentSpeedLevel + 1, BOARD_WIDTH, BOARD_HEIGHT);
-            System.out.println("🟢 Spawned SpeedUp LV" + (currentSpeedLevel + 1));
+        long currentTime = System.currentTimeMillis();
+
+        // Spawn first SpeedUp LV1
+        if (!firstSpawned) {
+            speedUp = new SpeedUp(1, BOARD_WIDTH, BOARD_HEIGHT);
+            lastSpawnTime = currentTime;
+            firstSpawned = true;
+            System.out.println("🟢 SpeedUp LV1 created at Y=" + speedUp.getY());
         }
 
-        // ✅ Update speedUp if it's active
+        // Spawn next SpeedUp after delay
+        if (speedUp == null && currentSpeedLevel < 4 && (currentTime - lastSpawnTime >= SPAWN_INTERVAL)) {
+            int nextLevel = currentSpeedLevel + 1;
+            speedUp = new SpeedUp(nextLevel, BOARD_WIDTH, BOARD_HEIGHT);
+            lastSpawnTime = currentTime;
+            System.out.println("🟢 SpeedUp LV" + nextLevel + " created at Y=" + speedUp.getY());
+        }
+
+        // Update SpeedUp
         if (speedUp != null) {
             speedUp.update();
 
             Rectangle skillBox = speedUp.getBounds();
-
-            // 💡 Use estimated player box (128x128 or your sprite size)
             Rectangle playerBox = new Rectangle(player.getX(), player.getY(), 128, 128);
 
+            // Collected
             if (skillBox.intersects(playerBox)) {
-                currentSpeedLevel++;
+                currentSpeedLevel = speedUp.getLevel();
+                updateSpeedIcon(currentSpeedLevel);
+                SpeedUp.setCollectedLevel(currentSpeedLevel);
                 speedUp = null;
-                System.out.println("🎯 Collected LV" + currentSpeedLevel);
+                lastSpawnTime = System.currentTimeMillis();
+                System.out.println("🎯 Collected SpeedUp LV" + currentSpeedLevel);
             }
 
-            if (speedUp.getX() + speedUp.getWidth() < 0) {
+            // Missed
+            else if (speedUp.getX() + speedUp.getWidth() < 0) {
+                System.out.println("🗑️ Missed SpeedUp LV" + speedUp.getLevel());
                 speedUp = null;
+                lastSpawnTime = System.currentTimeMillis();
             }
         }
- */
+
+        // Enemy 1 : shot the bullet
+        int MAX_ENEMY1 = 2;
+        if (enemy1List.size() < MAX_ENEMY1 && rand.nextInt(100) < 2) {
+            enemy1List.add(new Enemy1(BOARD_WIDTH, BOARD_HEIGHT));
+            System.out.println("🐙 Spawned Enemy1 (total: " + enemy1List.size() + ")");
+        }
+        Iterator<Enemy1> it1 = enemy1List.iterator();
+        while (it1.hasNext()) {
+            Enemy1 e1 = it1.next();
+            e1.update();
+            if (e1.getX() + e1.getWidth() < 0) {
+                it1.remove(); // remove off-screen
+            }
+        }
+
+        // Enemy 2 : just dive
+        int MAX_ENEMIES = 3; 
+        if (enemies.size() < MAX_ENEMIES && rand.nextInt(100) < 2) {
+            enemies.add(new Enemy2(BOARD_WIDTH, BOARD_HEIGHT));
+            System.out.println("🦈 Spawned Enemy2 (total: " + enemies.size() + ")");
+        }
+
+        Iterator<Enemy2> it = enemies.iterator();
+        while (it.hasNext()) {
+            Enemy2 e = it.next();
+            e.update();
+            if (e.getX() + e.getWidth() < 0) {
+                it.remove();
+            }
+        }
+
+        // 🧍Update player movement
         player.update();
+
+        // Auto switch to Scene2 when done
+        if (currentSpeedLevel >= 4 && speedUp == null) {
+            System.out.println("✅ All SpeedUps collected! Switching scene...");
+            game.loadScene2();
+        }
 
     }
 
     public void draw(Graphics g) {
-        // 1. Draw static background (ocean) first
+        // static background (ocean)
         if (staticBg != null) {
             g.drawImage(staticBg, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
         }
 
-        // 2. Draw scrolling parallax background (sand)
+        // scrolling parallax background (sand)
         if (parallaxBg != null) {
             int width = parallaxBg.getWidth(null);
             int height = parallaxBg.getHeight(null);
-            int y = (BOARD_HEIGHT - height) / 2; // center vertically
+            int y = (BOARD_HEIGHT - height) / 4; // center vertically
 
             // Draw two tiles for seamless looping
             g.drawImage(parallaxBg, parallaxX, y, null);
             g.drawImage(parallaxBg, parallaxX + width - 4, y, null);
         }
-        // Do about items
-        /* if (speedUp != null) {
+        // Do about items in SpeedUp
+        if (speedUp != null) {
             speedUp.draw(g, this);
-        } */
+        }
 
-        // 3. Draw player on top
+        // Draw player on top
         drawPlayer(g);
+
+        // Speed Icon
+        drawPowerUpUI(g);
+
+        // enemy1
+        for (Enemy1 e1 : enemy1List) {
+            e1.draw(g, this);
+        }
+
+        // enemy2
+        for (Enemy2 enemy : enemies) {
+            enemy.draw(g, this);
+        }
     }
 
     public void drawPlayer(Graphics g) {
         if (player != null) {
             g.drawImage(player.getImage(), player.getX(), player.getY(), this);
         }
-        
+
     }
 
     private class TAdapter extends KeyAdapter {
@@ -161,7 +250,7 @@ public class Scene1 extends JPanel {
         }
     }
 
-    //_____________________________________________
+    // _____________________________________________
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -182,4 +271,28 @@ public class Scene1 extends JPanel {
         }
     }
 
+    private void drawPowerUpUI(Graphics g) {
+        if (currentSpeedLevel > 0 && speedIcon != null) {
+            int iconSize = 48;
+            int padding = 10;
+            int x = BOARD_WIDTH - iconSize - padding;
+            int y = padding;
+            g.drawImage(speedIcon, x, y, iconSize, iconSize, this);
+
+        }
+    }
+
+    private void updateSpeedIcon(int level) {
+        String path = switch (level) {
+            case 1 -> "./src/assets/sprites/speedSkill1.png";
+            case 2 -> "./src/assets/sprites/speedSkill2.png";
+            case 3 -> "./src/assets/sprites/speedSkill3.png";
+            case 4 -> "./src/assets/sprites/speedSkill4.png";
+            default -> null;
+        };
+
+        if (path != null) {
+            speedIcon = new ImageIcon(path).getImage();
+        }
+    }
 }

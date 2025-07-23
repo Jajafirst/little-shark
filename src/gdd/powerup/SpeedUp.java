@@ -1,37 +1,60 @@
-// package gdd.powerup;
+package gdd.powerup;
 
-// import static gdd.Global.*;
-// import gdd.sprite.Player;
-// import javax.swing.ImageIcon;
+import javax.swing.*;
+import java.awt.*;
+import java.util.Random;
 
-// /*
-//  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-//  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
-//  */
+public class SpeedUp {
+    private Image image;
+    private int x, y;
+    private int speed = 3;
+    private int width, height;
+    private int level;
 
+    // ✅ Track the last collected level (shared across game)
+    private static int lastCollectedLevel = 0;
 
-// public class SpeedUp extends PowerUp {
+    // ✅ Set level when collected
+    public static void setCollectedLevel(int level) {
+        lastCollectedLevel = level;
+    }
 
-//     public SpeedUp(int x, int y) {
-//         super(x, y);
-//         // Set image
-//         ImageIcon ii = new ImageIcon(IMG_POWERUP_SPEEDUP);
-//         var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() ,
-//                 ii.getIconHeight() ,
-//                 java.awt.Image.SCALE_SMOOTH);
-//         setImage(scaledImage);
-//     }
+    // ✅ Get level for display
+    public static int getCollectedLevel() {
+        return lastCollectedLevel;
+    }
 
-//     public void act() {
-//         // SpeedUp specific behavior can be added here
-//         // For now, it just moves down the screen
-//         this.y += 2; // Move down by 2 pixel each frame
-//     }
+    // Constructor
+    public SpeedUp(int level, int boardWidth, int boardHeight) {
+        this.level = level;
+        ImageIcon icon = new ImageIcon("./src/assets/sprites/speedSkill" + level + ".png");
+        image = icon.getImage();
 
-//     public void upgrade(Player player) {
-//         // Upgrade the player with speed boost
-//         player.setSpeed(player.getSpeed() + 4); // Increase player's speed by 1
-//         this.die(); // Remove the power-up after use
-//     }
+        width = image.getWidth(null);
+        height = image.getHeight(null);
 
-// }
+        x = boardWidth;
+        Random rand = new Random();
+        y = 50 + rand.nextInt(boardHeight - 100); // random Y position with padding
+
+        System.out.println("📦 SpeedUp LV" + level + " created at Y=" + y);
+    }
+
+    public void update() {
+        x -= speed;
+    }
+
+    public void draw(Graphics g, JPanel panel) {
+        g.drawImage(image, x, y, panel);
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
+    }
+
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public int getWidth() { return width; }
+    public int getHeight() { return height; }
+    public int getLevel() { return level; }
+}
