@@ -1,32 +1,35 @@
-// package gdd.sprite;
+package gdd.sprite;
 
-// import static gdd.Global.*;
-// import javax.swing.ImageIcon;
+import static gdd.Global.*;
+import javax.swing.ImageIcon;
 
-// public class Shot extends Sprite {
+public class Shot extends Sprite {
 
-//     private static final int H_SPACE = 20;
-//     private static final int V_SPACE = 1;
+    private static final int H_SPACE = 20;
+    private static final int V_SPACE = 1;
 
-//     public Shot() {
-//     }
+    public Shot() {
+    }
 
-//     public Shot(int x, int y) {
+    public Shot(int x, int y) {
 
-//         initShot(x, y);
-//     }
+        initShot(x, y);
+    }
 
-//     private void initShot(int x, int y) {
+    private void initShot(int x, int y) {
+        var icon = new ImageIcon(IMG_SHOT);
+        if (icon.getImageLoadStatus() != java.awt.MediaTracker.COMPLETE) {
+            System.err.println("Error: Shot image not loaded properly");
+        }
+        setImage(icon.getImage());
 
-//         var ii = new ImageIcon(IMG_SHOT);
+        setX(x + H_SPACE);
+        setY(y - V_SPACE);
+    }
 
-//         // Scale the image to use the global scaling factor
-//         var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
-//                 ii.getIconHeight() * SCALE_FACTOR, 
-//                 java.awt.Image.SCALE_SMOOTH);
-//         setImage(scaledImage);
-
-//         setX(x + H_SPACE);
-//         setY(y - V_SPACE);
-//     }
-// }
+    @Override
+    public void act() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'act'");
+    }
+}
