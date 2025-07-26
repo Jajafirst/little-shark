@@ -270,6 +270,7 @@ public class Scene1 extends JPanel {
         }
     }
 
+    //_____________________________________________KeyListener
     private class TAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
@@ -296,7 +297,6 @@ public class Scene1 extends JPanel {
     }
 
     // _____________________________________________
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

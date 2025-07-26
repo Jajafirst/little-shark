@@ -137,44 +137,6 @@ public class Player extends Sprite {
         }
     }
 
-
-
-    /* public void update() {
-        if (upPressed) {
-            y = Math.max(0, y - speedY);
-        }
-        if (downPressed) {
-            y = Math.min(SCREEN_HEIGHT - getHeight(), y + speedY);
-        }
-
-        // Handle animation
-        animationDelay++;
-        if (animationDelay >= ANIMATION_SPEED) {
-            animationDelay = 0;
-
-            switch (action) {
-                case WALK:
-                    frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
-                    clipNo = frame; // Use frames 0-4 for walking
-                    break;
-
-                case SHOOT:
-                    frame = (frame + 1) % 4 + 5; // Loop through frames 5-8 for shooting
-                    clipNo = frame; // Use frames 5-8 for shooting
-                    action = WALK; // Reset action to WALK after shooting
-                    break;
-
-                case HURT:
-                    frame = (frame + 1) % 2 + 9; // Loop through frames 9-15 for hurting
-                    clipNo = frame; // Use frames 9-15 for hurting
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    } */
-
     // Input handling
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
@@ -182,7 +144,6 @@ public class Player extends Sprite {
         switch (key) {
             case KeyEvent.VK_SPACE:
                 isShooting = true;
-                System.out.println("🏀Shooting action triggered");
                 break;
 
             case KeyEvent.VK_1:
