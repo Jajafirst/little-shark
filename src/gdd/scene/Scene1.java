@@ -54,8 +54,8 @@ public class Scene1 extends JPanel {
     private static final long SPAWN_INTERVAL = 6_000; 
 
     // Enemies
-    private List<Enemy2> enemies = new ArrayList<>();
     private List<Enemy1> enemy1List = new ArrayList<>();
+    private List<Enemy2> enemy2List = new ArrayList<>();
 
     private List<Shot> shots = new ArrayList<>();
 
@@ -166,12 +166,12 @@ public class Scene1 extends JPanel {
 
         // Enemy 2 : just dive
         int MAX_ENEMIES = 3;
-        if (enemies.size() < MAX_ENEMIES && rand.nextInt(100) < 2) {
-            enemies.add(new Enemy2(BOARD_WIDTH, BOARD_HEIGHT));
-            System.out.println("🦈 Spawned Enemy2 (total: " + enemies.size() + ")");
+        if (enemy2List.size() < MAX_ENEMIES && rand.nextInt(100) < 2) {
+            enemy2List.add(new Enemy2(BOARD_WIDTH, BOARD_HEIGHT));
+            System.out.println("🦈 Spawned Enemy2 (total: " + enemy2List.size() + ")");
         }
 
-        Iterator<Enemy2> it = enemies.iterator();
+        Iterator<Enemy2> it = enemy2List.iterator();
         while (it.hasNext()) {
             Enemy2 e = it.next();
             e.update();
@@ -243,15 +243,15 @@ public class Scene1 extends JPanel {
 
         // Speed Icon
         drawPowerUpUI(g);
+        drawEnemies(g);
+    }
 
-        // enemy1
-        for (Enemy1 e1 : enemy1List) {
-            e1.draw(g, this);
+    public void drawEnemies(Graphics g) {
+        for (Enemy1 enemy1 : enemy1List) {
+            enemy1.draw(g, this);
         }
-
-        // enemy2
-        for (Enemy2 enemy : enemies) {
-            enemy.draw(g, this);
+        for (Enemy2 enemy2 : enemy2List) {
+            enemy2.draw(g, this);
         }
     }
 
