@@ -1,7 +1,10 @@
 // TODO 
 // - add sound effects
+// - add hitbox for enemies
+// - add hitbox for player
 // FIXME
 // - load Scene2 when end the round intead of pressing space 
+// - delay spawn spawn player shots
 
 package gdd.scene;
 

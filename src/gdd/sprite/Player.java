@@ -1,7 +1,3 @@
-// FIXME
-// - the switching animation is not smooth yet, maybe change to be switch case might help.
-// - when shooting, the system shoots but the player doesn't change to shooting animation immediately.
-
 package gdd.sprite;
 
 import static gdd.Global.*;
@@ -34,11 +30,12 @@ public class Player extends Sprite {
     private static final String DIE = "die";
 
     private boolean isShooting = false;
+    private boolean isHurt = false;
 
     // Animation
     public int frame = 0;
     private int animationDelay = 0;
-    private final int ANIMATION_SPEED = 8; // Higher = slower animation
+    private final int ANIMATION_SPEED = 6; // Higher = slower animation
     private int clipNo = 0;
     private final Rectangle[] clips = new Rectangle[] {
         // Walking
@@ -82,6 +79,64 @@ public class Player extends Sprite {
     }
 
     public void update() {
+        System.out.println("🎬Player action: " + action);
+        //_______Movement
+        if (upPressed) {
+            y = Math.max(0, y - speedY);
+        }
+        if (downPressed) {
+            y = Math.min(SCREEN_HEIGHT - getHeight(), y + speedY);
+        }
+
+        //_______Animation
+        animationDelay++;
+        if (animationDelay >= ANIMATION_SPEED) {
+            animationDelay = 0;
+            frame++;
+
+            switch (action) {
+                case WALK:
+                    // Handle walk animation cycling
+                    clipNo = frame % 5; // Cycle through walk frames 0-4
+
+                    // Check for immediate actions that should interrupt walk animation
+                    if (isShooting) {
+                        action = SHOOT;
+                        frame = 0; // Reset frame counter for shoot animation
+                        clipNo = 5; // First shoot frame
+                        isShooting = false;
+                    } else if (isHurt) {
+                        action = HURT;
+                        frame = 0;
+                        clipNo = 9; // First hurt frame
+                        isHurt = false;
+                    }
+                    break;
+
+                case SHOOT:
+                    if (frame < 4) {
+                        clipNo = 5 + frame; // Play shoot frames 5-8
+                    } else {
+                        action = WALK; // Return to walking
+                        frame = 0;
+                    }
+                    break;
+
+                case HURT:
+                    if (frame < 2) {
+                        clipNo = 9 + frame; // Play hurt frames 9-10
+                    } else {
+                        action = WALK; // Return to walking
+                        frame = 0;
+                    }
+                    break;
+            }
+        }
+    }
+
+
+
+    /* public void update() {
         if (upPressed) {
             y = Math.max(0, y - speedY);
         }
@@ -115,7 +170,7 @@ public class Player extends Sprite {
                     break;
             }
         }
-    }
+    } */
 
     // Input handling
     public void keyPressed(KeyEvent e) {
@@ -123,12 +178,12 @@ public class Player extends Sprite {
 
         switch (key) {
             case KeyEvent.VK_SPACE:
-                action = SHOOT;
+                isShooting = true;
                 System.out.println("🏀Shooting action triggered");
                 break;
 
             case KeyEvent.VK_1:
-                action = HURT;
+                isHurt = true;
                 break;
                 
             default:
@@ -161,8 +216,7 @@ public class Player extends Sprite {
                 action = WALK; // Reset action to WALK when UP or DOWN is released
                 break; */
             
-            case KeyEvent.VK_RIGHT:
-                action = WALK; // Reset action to WALK when RIGHT is released
+            case KeyEvent.VK_SPACE:
                 break;
         
             default:
