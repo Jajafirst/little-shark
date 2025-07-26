@@ -3,8 +3,6 @@
 // FIXME
 // - load Scene2 when end the round intead of pressing space 
 
-// - fix timer, it makes player speed different in Scene1 and Scene2
-
 package gdd.scene;
 
 import javax.swing.*;
@@ -23,6 +21,7 @@ import gdd.Game;
 import static gdd.Global.BOARD_HEIGHT;
 import static gdd.Global.BOARD_WIDTH;
 import static gdd.Global.DELAY;
+import static gdd.Global.PARALLAX_SCROLL_SPEED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +38,7 @@ public class Scene1 extends JPanel {
     private Image staticBg;
     private Image parallaxBg;
     private int parallaxX;
+    private boolean switchedToScene2 = false;
 
     // SpeedUp Icon
     private static int lastCollectedLevel = 0;
@@ -47,7 +47,7 @@ public class Scene1 extends JPanel {
     private int currentSpeedLevel = 0;
     private boolean firstSpawned = false;
     private long lastSpawnTime = 0;
-    private static final long SPAWN_INTERVAL = 6_000; // 1 minute in milliseconds
+    private static final long SPAWN_INTERVAL = 6_000; 
 
     // Enemies
     private List<Enemy2> enemies = new ArrayList<>();
@@ -73,12 +73,10 @@ public class Scene1 extends JPanel {
         requestFocusInWindow();
         setBackground(Color.black);
 
-        timer = new Timer(DELAY, new GameCycle());
-        timer.start();
-
         gameInit();
         System.out.println("✅ Scene1 started");
 
+        timer = new Timer(DELAY, new GameCycle());
         timer.start();
     }
 
@@ -87,7 +85,7 @@ public class Scene1 extends JPanel {
         ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/final-scene1.png");
         parallaxBg = parallaxIcon.getImage();
 
-        // speedUp = new SpeedUp();
+        // speedUp 
         ImageIcon speedIconImg = new ImageIcon("./src/assets/sprites/speedSkill1.png");
         speedIcon = speedIconImg.getImage();
 
@@ -96,7 +94,8 @@ public class Scene1 extends JPanel {
 
     public void update() {
         // Scroll parallax background
-        parallaxX -= 1;
+        parallaxX -= PARALLAX_SCROLL_SPEED;
+
         if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth(null)) {
             parallaxX = 0;
         }
@@ -160,7 +159,7 @@ public class Scene1 extends JPanel {
         }
 
         // Enemy 2 : just dive
-        int MAX_ENEMIES = 3; 
+        int MAX_ENEMIES = 3;
         if (enemies.size() < MAX_ENEMIES && rand.nextInt(100) < 2) {
             enemies.add(new Enemy2(BOARD_WIDTH, BOARD_HEIGHT));
             System.out.println("🦈 Spawned Enemy2 (total: " + enemies.size() + ")");
@@ -175,11 +174,11 @@ public class Scene1 extends JPanel {
             }
         }
 
-        // 🧍Update player movement
         player.update();
 
         // Auto switch to Scene2 when done
-        if (currentSpeedLevel >= 4 && speedUp == null) {
+        if (!switchedToScene2 && currentSpeedLevel >= 4 && speedUp == null) {
+            switchedToScene2 = true;
             System.out.println("✅ All SpeedUps collected! Switching scene...");
             game.loadScene2();
         }

@@ -1,9 +1,3 @@
-// TODO 
-// - add sound effects
-// FIXME
-// - load Scene2 when end the round intead of pressing space 
-
-// - fix timer, it makes player speed different in Scene1 and Scene2
 
 package gdd.scene;
 
@@ -11,13 +5,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 import gdd.sprite.Enemy1;
 import gdd.sprite.Enemy2;
+import gdd.sprite.Boss;
+import gdd.sprite.BossBullet;
 import gdd.sprite.Player;
-import gdd.powerup.SpeedUp;
+import gdd.powerup.PowerUp;
 import gdd.Game;
 
 import static gdd.Global.BOARD_HEIGHT;
@@ -27,7 +24,6 @@ import static gdd.Global.DELAY;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Iterator;
 
 public class Scene2 extends JPanel {
 
@@ -38,20 +34,28 @@ public class Scene2 extends JPanel {
     // Background and Parallax
     private Image staticBg;
     private Image parallaxBg;
-    private int parallaxX;
+    private double parallaxX = 0;
+    private int scrollPower = 1;
 
-    // SpeedUp Icon
+    // Power Icon
     private static int lastCollectedLevel = 0;
-    private SpeedUp speedUp;
-    private Image speedIcon;
-    private int currentSpeedLevel = 0;
+    private PowerUp powerUp;
+    private Image powerIcon;
+    private int currentPowerLevel = 0;
     private boolean firstSpawned = false;
     private long lastSpawnTime = 0;
-    private static final long SPAWN_INTERVAL = 6_000; // 1 minute in milliseconds
+    private static final long SPAWN_INTERVAL = 6_000;
 
     // Enemies
     private List<Enemy2> enemies = new ArrayList<>();
     private List<Enemy1> enemy1List = new ArrayList<>();
+
+    // Boss
+    private boolean bossSpawned = false;
+    private List<BossBullet> bossBullets = new ArrayList<>();
+    private Boss boss;
+
+    private Random rand = new Random();
 
     public static void setCollectedLevel(int level) {
         lastCollectedLevel = level;
@@ -60,8 +64,6 @@ public class Scene2 extends JPanel {
     public static int getCollectedLevel() {
         return lastCollectedLevel;
     }
-
-    private Random rand = new Random();
 
     public Scene2(Game game) {
         this.game = game;
@@ -72,80 +74,74 @@ public class Scene2 extends JPanel {
         setFocusable(true);
         requestFocusInWindow();
         setBackground(Color.black);
-
-        timer = new Timer(DELAY, new GameCycle());
-        timer.start();
-
         gameInit();
-        System.out.println("✅ Scene1 started");
-
+        System.out.println("✅ Scene2 started");
+        timer = new Timer(DELAY, new GameCycle());
         timer.start();
     }
 
     private void gameInit() {
-        // Load parallax background
+        // load parallax
         ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/final-scene2.png");
         parallaxBg = parallaxIcon.getImage();
 
-        // shotSkill 
-        ImageIcon speedIconImg = new ImageIcon("./src/assets/sprites/shotSkill1.png");
-        speedIcon = speedIconImg.getImage();
+        // powerUp
+        ImageIcon powerIconImg = new ImageIcon("./src/assets/sprites/shotSkill1.png");
+        powerIcon = powerIconImg.getImage();
 
         player = new Player();
     }
 
     public void update() {
-        // Scroll parallax background
-        parallaxX -= 1;
+
+        parallaxX -= scrollPower;
         if (parallaxBg != null && parallaxX <= -parallaxBg.getWidth(null)) {
             parallaxX = 0;
         }
 
         long currentTime = System.currentTimeMillis();
-
-        // Spawn first SpeedUp LV1
+        // Spawn first PowerUp LV1
         if (!firstSpawned) {
-            speedUp = new SpeedUp(1, BOARD_WIDTH, BOARD_HEIGHT);
+            powerUp = new PowerUp(1, BOARD_WIDTH, BOARD_HEIGHT);
             lastSpawnTime = currentTime;
             firstSpawned = true;
-            System.out.println("🟢 SpeedUp LV1 created at Y=" + speedUp.getY());
+            System.out.println("🟢 powerUp LV1 created at Y=" + powerUp.getY());
         }
 
-        // Spawn next SpeedUp after delay
-        if (speedUp == null && currentSpeedLevel < 4 && (currentTime - lastSpawnTime >= SPAWN_INTERVAL)) {
-            int nextLevel = currentSpeedLevel + 1;
-            speedUp = new SpeedUp(nextLevel, BOARD_WIDTH, BOARD_HEIGHT);
+        // Spawn next PowerUp after delay
+        if (powerUp == null && currentPowerLevel < 4 && (currentTime - lastSpawnTime >= SPAWN_INTERVAL)) {
+            int nextLevel = currentPowerLevel + 1;
+            powerUp = new PowerUp(nextLevel, BOARD_WIDTH, BOARD_HEIGHT);
             lastSpawnTime = currentTime;
-            System.out.println("🟢 SpeedUp LV" + nextLevel + " created at Y=" + speedUp.getY());
+            System.out.println("🟢 powerUp LV" + nextLevel + " created at Y=" + powerUp.getY());
         }
+        // Update PowerUp
+        if (powerUp != null) {
+            powerUp.update();
 
-        // Update SpeedUp
-        if (speedUp != null) {
-            speedUp.update();
-
-            Rectangle skillBox = speedUp.getBounds();
+            Rectangle skillBox = powerUp.getBounds();
             Rectangle playerBox = new Rectangle(player.getX(), player.getY(), 128, 128);
 
             // Collected
             if (skillBox.intersects(playerBox)) {
-                currentSpeedLevel = speedUp.getLevel();
-                updateSpeedIcon(currentSpeedLevel);
-                SpeedUp.setCollectedLevel(currentSpeedLevel);
-                speedUp = null;
+                currentPowerLevel = powerUp.getLevel();
+                updatePowerIcon(currentPowerLevel);
+                PowerUp.setCollectedLevel(currentPowerLevel);
+                powerUp = null;
                 lastSpawnTime = System.currentTimeMillis();
-                System.out.println("🎯 Collected SpeedUp LV" + currentSpeedLevel);
+                System.out.println("🎯 Collected powerUp LV" + currentPowerLevel);
             }
 
             // Missed
-            else if (speedUp.getX() + speedUp.getWidth() < 0) {
-                System.out.println("🗑️ Missed SpeedUp LV" + speedUp.getLevel());
-                speedUp = null;
+            else if (powerUp.getX() + powerUp.getWidth() < 0) {
+                System.out.println("🗑️ Missed powerUp LV" + powerUp.getLevel());
+                powerUp = null;
                 lastSpawnTime = System.currentTimeMillis();
             }
         }
 
         // Enemy 1 : shot the bullet
-        int MAX_ENEMY1 = 2;
+        int MAX_ENEMY1 = 1;
         if (enemy1List.size() < MAX_ENEMY1 && rand.nextInt(100) < 2) {
             enemy1List.add(new Enemy1(BOARD_WIDTH, BOARD_HEIGHT));
             System.out.println("🐙 Spawned Enemy1 (total: " + enemy1List.size() + ")");
@@ -155,17 +151,16 @@ public class Scene2 extends JPanel {
             Enemy1 e1 = it1.next();
             e1.update();
             if (e1.getX() + e1.getWidth() < 0) {
-                it1.remove(); // remove off-screen
+                it1.remove();
             }
         }
 
-        // Enemy 2 : just dive
-        int MAX_ENEMIES = 3; 
+        // Enemy 2
+        int MAX_ENEMIES = 2;
         if (enemies.size() < MAX_ENEMIES && rand.nextInt(100) < 2) {
             enemies.add(new Enemy2(BOARD_WIDTH, BOARD_HEIGHT));
             System.out.println("🦈 Spawned Enemy2 (total: " + enemies.size() + ")");
         }
-
         Iterator<Enemy2> it = enemies.iterator();
         while (it.hasNext()) {
             Enemy2 e = it.next();
@@ -175,52 +170,78 @@ public class Scene2 extends JPanel {
             }
         }
 
-        // 🧍Update player movement
-        player.update();
-
-        // Auto switch to Scene2 when done
-        if (currentSpeedLevel >= 4 && speedUp == null) {
-            System.out.println("✅ All SpeedUps collected! Switching scene...");
-            game.loadScene2();
+        // Boss
+        if (!bossSpawned && currentPowerLevel >= 4) {
+            boss = new Boss(BOARD_WIDTH - 100, 195);
+            bossSpawned = true;
         }
+
+        if (boss != null) {
+            boss.setLaserActive(true); // keep laser logic
+            boss.update();
+
+            // 🔥 Boss bullet spawning
+            // 🔥 Boss bullet spawning
+            if (rand.nextInt(100) < 2) {
+                int bulletX = boss.getBulletX();
+
+                // ✅ Random Y position within screen bounds
+                int minY = 50; // avoid top UI area
+                int maxY = BOARD_HEIGHT - 50 - 32; // avoid bottom edge (32 = bullet height)
+                int randomY = rand.nextInt(maxY - minY) + minY;
+
+                bossBullets.add(new BossBullet(bulletX, randomY));
+            }
+
+            // 🔄 Update bullets
+            // 🔄 Update bullets
+            Iterator<BossBullet> bulletIterator = bossBullets.iterator();
+            while (bulletIterator.hasNext()) {
+                BossBullet bullet = bulletIterator.next();
+                bullet.update();
+                if (!bullet.isActive()) {
+                    bulletIterator.remove();
+                }
+            }
+        }
+
+        player.update();
 
     }
 
     public void draw(Graphics g) {
-        // static background (ocean)
         if (staticBg != null) {
             g.drawImage(staticBg, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
         }
 
-        // scrolling parallax background (sand)
         if (parallaxBg != null) {
             int width = parallaxBg.getWidth(null);
             int height = parallaxBg.getHeight(null);
-            int y = (BOARD_HEIGHT - height) / 4; // center vertically
+            int y = (BOARD_HEIGHT - height) / 4;
+            int drawX = (int) parallaxX;
 
-            // Draw two tiles for seamless looping
-            g.drawImage(parallaxBg, parallaxX, y, null);
-            g.drawImage(parallaxBg, parallaxX + width - 4, y, null);
-        }
-        // Do about items in SpeedUp
-        if (speedUp != null) {
-            speedUp.draw(g, this);
+            g.drawImage(parallaxBg, drawX, y, null);
+            g.drawImage(parallaxBg, drawX + width - 4, y, null);
         }
 
-        // Draw player on top
+        if (powerUp != null) {
+            powerUp.draw(g, this);
+        }
+
         drawPlayer(g);
 
-        // Speed Icon
         drawPowerUpUI(g);
 
-        // enemy1
         for (Enemy1 e1 : enemy1List) {
             e1.draw(g, this);
         }
 
-        // enemy2
         for (Enemy2 enemy : enemies) {
             enemy.draw(g, this);
+        }
+
+        for (BossBullet bullet : bossBullets) {
+            bullet.draw(g, this);
         }
     }
 
@@ -228,23 +249,12 @@ public class Scene2 extends JPanel {
         if (player != null) {
             g.drawImage(player.getImage(), player.getX(), player.getY(), this);
         }
-
     }
 
     private class TAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
             player.keyPressed(e);
-            int x = player.getX();
-            int y = player.getY();
-
-            int key = e.getKeyCode();
-
-            if (key == KeyEvent.VK_SPACE) {
-                System.out.println("🔁 Switching to Scene2...");
-                game.loadScene2();
-            }
-
         }
 
         @Override
@@ -253,12 +263,23 @@ public class Scene2 extends JPanel {
         }
     }
 
-    // _____________________________________________
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        draw(g);
+        draw(g); // background, enemies, etc.
+
+        if (boss != null) {
+            boss.drawLaser(g);
+            boss.draw(g, this);
+
+            if (boss.isLaserActive()) {
+                Rectangle laserBounds = boss.getLaserBounds();
+                if (player.getBounds().intersects(laserBounds)) {
+                    System.out.println("🔥 Player hit by laser!");
+                    // player.setDead(true);
+                }
+            }
+        }
     }
 
     private void doGameCycle() {
@@ -267,7 +288,6 @@ public class Scene2 extends JPanel {
     }
 
     private class GameCycle implements ActionListener {
-
         @Override
         public void actionPerformed(ActionEvent e) {
             doGameCycle();
@@ -275,27 +295,30 @@ public class Scene2 extends JPanel {
     }
 
     private void drawPowerUpUI(Graphics g) {
-        if (currentSpeedLevel > 0 && speedIcon != null) {
+        if (currentPowerLevel > 0 && powerIcon != null) {
             int iconSize = 48;
             int padding = 10;
             int x = BOARD_WIDTH - iconSize - padding;
             int y = padding;
-            g.drawImage(speedIcon, x, y, iconSize, iconSize, this);
-
+            g.drawImage(powerIcon, x, y, iconSize, iconSize, this);
         }
     }
 
-    private void updateSpeedIcon(int level) {
+    private void updatePowerIcon(int level) {
         String path = switch (level) {
-            case 1 -> "./src/assets/sprites/speedSkill1.png";
-            case 2 -> "./src/assets/sprites/speedSkill2.png";
-            case 3 -> "./src/assets/sprites/speedSkill3.png";
-            case 4 -> "./src/assets/sprites/speedSkill4.png";
+            case 1 -> "./src/assets/sprites/shotSkill1.png";
+            case 2 -> "./src/assets/sprites/shotSkill2.png";
+            case 3 -> "./src/assets/sprites/shotSkill3.png";
+            case 4 -> "./src/assets/sprites/shotSkill4.png";
             default -> null;
         };
 
         if (path != null) {
-            speedIcon = new ImageIcon(path).getImage();
+            powerIcon = new ImageIcon(path).getImage();
         }
+    }
+
+    public void setScrollPower(int i) {
+        throw new UnsupportedOperationException("Unimplemented method 'setScrollPower'");
     }
 }

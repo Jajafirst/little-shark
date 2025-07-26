@@ -1,3 +1,6 @@
+// FIXME
+// - the switching animation is not smooth yet, maybe change to be switch case might help.
+
 package gdd.sprite;
 
 import static gdd.Global.*;
@@ -14,6 +17,8 @@ import javax.swing.ImageIcon;
 public class Player extends Sprite {
     private static int speedY = 5; // Added default speed
 
+  //  private static final int speedY = 5; // Added default speed
+    
     // private Image image;
     private static final int START_X = 60;
     private static final int START_Y = 250;
@@ -21,17 +26,27 @@ public class Player extends Sprite {
 
     private boolean upPressed, downPressed;
 
+    private boolean shoot;
+    
     // Animation
-    private int frame = 0;
+    public int frame = 0;
     private int animationDelay = 0;
     private final int ANIMATION_SPEED = 8; // Higher = slower animation
     private int clipNo = 0;
     private final Rectangle[] clips = new Rectangle[] {
-            new Rectangle(0, 0, 120, 64), // Frame 0
-            new Rectangle(120, 0, 120, 64), // Frame 1
-            new Rectangle(240, 0, 120, 64), // Frame 2
-            new Rectangle(360, 0, 120, 64), // Frame 3
-            new Rectangle(480, 0, 120, 64) // Frame 4
+           
+        new Rectangle(0, 0, 120, 64),   // Frame 0
+        new Rectangle(120, 0, 120, 64), // Frame 1
+        new Rectangle(240, 0, 120, 64), // Frame 2
+        new Rectangle(360, 0, 120, 64), // Frame 3
+        new Rectangle(480, 0, 120, 64), // Frame 4
+
+        // Walking
+        new Rectangle(0, 64, 120, 64),  // Frame 5
+        new Rectangle(120, 64, 120, 64),  // Frame 6
+        new Rectangle(240, 64, 120, 64),  // Frame 7
+        new Rectangle(360, 64, 120, 64),  // Frame 8
+        new Rectangle(480, 64, 120, 64)   // Frame 9
     };
 
     public Player() {
@@ -47,7 +62,6 @@ public class Player extends Sprite {
         setImage(icon.getImage());
         setX(START_X);
         setY(START_Y);
-
     }
 
     public void update() {
@@ -62,14 +76,26 @@ public class Player extends Sprite {
         animationDelay++;
         if (animationDelay >= ANIMATION_SPEED) {
             animationDelay = 0;
-            frame = (frame + 1) % clips.length;
-            clipNo = frame;
+
+            if (shoot) {
+                frame = (frame + 1) % 5; // Loop through frames 0-4
+                clipNo = frame; // Use frames 0-4 for shooting
+                shoot = false; // Reset shoot after one frame
+            } else {
+                frame = (frame + 1) % 5 + 5; // Loop through frames 5-9 for walking
+                clipNo = frame; // Use frames 5-9 for walking
+            }
         }
     }
 
     // Input handling
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
+
+        if (key == KeyEvent.VK_RIGHT) {
+            shoot = true;
+        }
+
         if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
             upPressed = true;
             System.out.println("Key pressed: " + KeyEvent.getKeyText(e.getKeyCode()));

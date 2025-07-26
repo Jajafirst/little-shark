@@ -60,4 +60,9 @@ public class Game extends JFrame {
         repaint();
     }
 
+    public Scene2 getCurrentScene() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCurrentScene'");
+    } 
+
 }

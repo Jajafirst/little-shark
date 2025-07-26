@@ -10,7 +10,7 @@ import java.util.Random;
 
 public class Enemy2 {
     private int x, y;
-    private final int speed = 10;
+    private final int speed = 4;
 
     private final int drawWidth = 128;
     private final int drawHeight = 64;
