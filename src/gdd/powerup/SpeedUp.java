@@ -11,15 +11,15 @@ public class SpeedUp {
     private int width, height;
     private int level;
 
-    // ✅ Track the last collected level (shared across game)
+    //  Track the last collected level (shared across game)
     private static int lastCollectedLevel = 0;
 
-    // ✅ Set level when collected
+    //  Set level when collected
     public static void setCollectedLevel(int level) {
         lastCollectedLevel = level;
     }
 
-    // ✅ Get level for display
+    //  Get level for display
     public static int getCollectedLevel() {
         return lastCollectedLevel;
     }

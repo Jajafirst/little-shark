@@ -12,14 +12,17 @@ import java.util.Timer;
 import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
-    private static final int speedY = 5; // Added default speed
+    private static int speedY = 5; // Added default speed
+
+  //  private static final int speedY = 5; // Added default speed
     
     // private Image image;
     private static final int START_X = 60;
     private static final int START_Y = 250;
     private static final int SCREEN_HEIGHT = 500; // Example value, adjust as needed
-    
+
     private boolean upPressed, downPressed;
+
     private boolean shoot;
 
     private String action = WALK; // Default action
@@ -191,8 +194,8 @@ public class Player extends Sprite {
         }
 
         if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
-            upPressed = true;   
-            System.out.println("Key pressed: " + KeyEvent.getKeyText(e.getKeyCode())); 
+            upPressed = true;
+            System.out.println("Key pressed: " + KeyEvent.getKeyText(e.getKeyCode()));
         }
         if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
             downPressed = true;
@@ -230,14 +233,20 @@ public class Player extends Sprite {
     }
 
     // Getters and setters
-    public int getFrame() { return frame; }
-    
+    public int getFrame() {
+        return frame;
+    }
+
     @Override
-    public int getHeight() { return clips[clipNo].height; }
-    
+    public int getHeight() {
+        return clips[clipNo].height;
+    }
+
     @Override
-    public int getWidth() { return clips[clipNo].width; }
-    
+    public int getWidth() {
+        return clips[clipNo].width;
+    }
+
     @Override
     public Image getImage() {
         Rectangle bound = clips[clipNo];
@@ -246,9 +255,13 @@ public class Player extends Sprite {
     }
 
     @Override
+    // Either implement or remove this
     public void act() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'act'");
     }
-    
+
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, 128, 128); // or whatever size your player sprite is
+    }
 }
