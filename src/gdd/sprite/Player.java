@@ -94,16 +94,6 @@ public class Player extends Sprite {
         if (animationDelay >= ANIMATION_SPEED) {
             animationDelay = 0;
 
-
-            /* if (shoot) {
-                frame = (frame + 1) % 4 + 5; // Loop through frames 5-8 for shooting
-                clipNo = frame; // Use frames 5-9 for shooting
-                shoot = false; // Reset shoot after one frame
-            } else {
-                frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
-                clipNo = frame; // Use frames 0-4 for walking
-            } */
-
             switch (action) {
                 case WALK:
                     frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
@@ -132,7 +122,7 @@ public class Player extends Sprite {
         int key = e.getKeyCode();
 
         switch (key) {
-            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_SPACE:
                 action = SHOOT;
                 System.out.println("🏀Shooting action triggered");
                 break;
