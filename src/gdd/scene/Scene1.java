@@ -1,6 +1,5 @@
 // TODO 
 // - add sound effects
-// - add hitbox for enemies
 // - add hitbox for player
 // FIXME
 // - load Scene2 when end the round intead of pressing space 
@@ -196,6 +195,25 @@ public class Scene1 extends JPanel {
             if (shot.isVisible()) {
                 int shotX = shot.getX();
                 int shotY = shot.getY();
+
+                // Kill enemy1 when shot hits
+                for (Enemy1 enemy1 : enemy1List) {
+                    if (enemy1.getBounds().intersects(new Rectangle(shot.getX(), shot.getY(), shot.getWidth(), shot.getHeight()))) {
+                        System.out.println("💥 Shot hit Enemy1 at (" + enemy1.getX() + ", " + enemy1.getY() + ")");
+                        enemy1List.remove(enemy1);
+                        toRemovesShots.add(shot);
+                        break; // Exit loop after hit
+                    }
+                }
+                // Kill enemy2 when shot hits
+                for (Enemy2 enemy2 : enemy2List) {
+                    if (enemy2.getBounds().intersects(new Rectangle(shot.getX(), shot.getY(), shot.getWidth(), shot.getHeight()))) {
+                        System.out.println("💥 Shot hit Enemy2 at (" + enemy2.getX() + ", " + enemy2.getY() + ")");
+                        enemy2List.remove(enemy2);
+                        toRemovesShots.add(shot);
+                        break; // Exit loop after hit
+                    }
+                }
 
                 // Speed up shot
                 int x = shot.getX();
