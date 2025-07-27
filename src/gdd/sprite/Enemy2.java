@@ -20,6 +20,16 @@ public class Enemy2 {
     private int animationCounter = 0;
     private final int animationDelay = 6; // Slightly faster for smoothness
 
+    private boolean hasHitPlayer = false;
+
+    public boolean hasHitPlayer() {
+        return hasHitPlayer;
+    }
+
+    public void setHasHitPlayer(boolean hasHitPlayer) {
+        this.hasHitPlayer = hasHitPlayer;
+    }
+
     // ✅ Shared across all instances
     private static BufferedImage[] sharedFrames = null;
 

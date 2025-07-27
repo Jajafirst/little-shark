@@ -68,6 +68,7 @@ public class Scene1 extends JPanel {
 
     private Random rand = new Random();
 
+    //____________________________________________
     public Scene1(Game game) {
         this.game = game;
     }
@@ -95,6 +96,7 @@ public class Scene1 extends JPanel {
         speedIcon = speedIconImg.getImage();
 
         player = new Player();
+        player.setHealth(100);
     }
 
     public void update() {
@@ -189,17 +191,13 @@ public class Scene1 extends JPanel {
         }
 
         // player shots
-        // FIXME gonna need to add hit box for enemies
         List<Shot> toRemovesShots = new ArrayList<>();
         for (Shot shot : shots) {
             if (shot.isVisible()) {
-                int shotX = shot.getX();
-                int shotY = shot.getY();
 
                 // Kill enemy1 when shot hits
                 for (Enemy1 enemy1 : enemy1List) {
-                    if (enemy1.getBounds().intersects(new Rectangle(shot.getX(), shot.getY(), shot.getWidth(), shot.getHeight()))) {
-                        System.out.println("💥 Shot hit Enemy1 at (" + enemy1.getX() + ", " + enemy1.getY() + ")");
+                    if (enemy1.getBounds().intersects(shot.getBounds())) {
                         enemy1List.remove(enemy1);
                         toRemovesShots.add(shot);
                         break; // Exit loop after hit
@@ -207,8 +205,7 @@ public class Scene1 extends JPanel {
                 }
                 // Kill enemy2 when shot hits
                 for (Enemy2 enemy2 : enemy2List) {
-                    if (enemy2.getBounds().intersects(new Rectangle(shot.getX(), shot.getY(), shot.getWidth(), shot.getHeight()))) {
-                        System.out.println("💥 Shot hit Enemy2 at (" + enemy2.getX() + ", " + enemy2.getY() + ")");
+                    if (enemy2.getBounds().intersects(shot.getBounds())) {
                         enemy2List.remove(enemy2);
                         toRemovesShots.add(shot);
                         break; // Exit loop after hit
@@ -232,6 +229,43 @@ public class Scene1 extends JPanel {
             }
         }
         shots.removeAll(toRemovesShots);
+
+        // Player hitbox check - modified to only reduce health once per collision
+        for (Enemy2 enemy2 : enemy2List) {
+            if (enemy2.getBounds().intersects(new Rectangle(player.getX(), player.getY(), 128, 128))) {
+                // Only reduce health if this enemy hasn't hit the player before
+                if (!enemy2.hasHitPlayer()) {
+                    player.setHealth(player.getHealth() - 10);
+                    enemy2.setHasHitPlayer(true); // Mark this enemy as having hit the player
+                    System.out.println("💥 Player hit! Health: " + player.getHealth());
+                    if (player.getHealth() <= 0) {
+                        System.out.println("💀 Player died!");
+                        // Handle player death (e.g., game over)
+                    }
+                }
+            } else {
+                // Reset the flag when the enemy is no longer colliding
+                enemy2.setHasHitPlayer(false);
+            }
+        }
+        for (Enemy1 enemy1 : enemy1List) {
+            if (enemy1.getBounds().intersects(new Rectangle(player.getX(), player.getY(), 128, 128))) {
+                // Only reduce health if this enemy hasn't hit the player before
+                if (!enemy1.hasHitPlayer()) {
+                    player.setHealth(player.getHealth() - 10);
+                    enemy1.setHasHitPlayer(true); // Mark this enemy as having hit the player
+                    System.out.println("💥 Player hit! Health: " + player.getHealth());
+                    if (player.getHealth() <= 0) {
+                        System.out.println("💀 Player died!");
+                        // Handle player death (e.g., game over)
+                    }
+                }
+            } else {
+                // Reset the flag when the enemy is no longer colliding
+                enemy1.setHasHitPlayer(false);
+            }
+        }
+
     }
 
     public void draw(Graphics g) {
@@ -302,8 +336,11 @@ public class Scene1 extends JPanel {
                 System.out.println("🔁 Switching to Scene2...");
                 game.loadScene2();
             }
-            if (key == KeyEvent.VK_SPACE && shots.size() < 4) {
+
+            // Player shots
+            if (key == KeyEvent.VK_SPACE && shots.size() < 4 && player.shootingDelay()) {
                 shots.add(new Shot(x ,y));
+                player.setLastShotTime(System.currentTimeMillis());
             }
 
         }

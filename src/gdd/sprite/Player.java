@@ -23,8 +23,7 @@ public class Player extends Sprite {
 
     private boolean upPressed, downPressed;
 
-    private boolean shoot;
-
+    // Player actions
     private String action = WALK; // Default action
 
     private static final String WALK = "walk";
@@ -34,6 +33,13 @@ public class Player extends Sprite {
 
     private boolean isShooting = false;
     private boolean isHurt = false;
+
+    // Player Shots timing
+    private long lastShotTime = 0;
+    private static final long SHOT_DELAY = 1000; // 1000 milliseconds (1 second) between player shots
+
+    // Player Health
+    private int health; // Example health value, adjust as needed
 
     // Animation
     public int frame = 0;
@@ -67,6 +73,7 @@ public class Player extends Sprite {
 
     };
 
+    //____________________________________
     public Player() {
         initPlayer();
     }
@@ -82,7 +89,6 @@ public class Player extends Sprite {
     }
 
     public void update() {
-        System.out.println("🎬Player action: " + action);
         //_______Movement
         if (upPressed) {
             y = Math.max(0, y - speedY);
@@ -137,13 +143,30 @@ public class Player extends Sprite {
         }
     }
 
+    public boolean shootingDelay() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastShotTime >= SHOT_DELAY) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void setLastShotTime(long lastShotTime) {
+        this.lastShotTime = lastShotTime;
+    }
+
     // Input handling
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
         switch (key) {
             case KeyEvent.VK_SPACE:
-                isShooting = true;
+                if (shootingDelay()) {
+                    isShooting = true;
+                }else {
+                    isShooting = false;
+                }
                 break;
 
             case KeyEvent.VK_1:
@@ -188,6 +211,7 @@ public class Player extends Sprite {
         }
     }
 
+    //_____________________________________
     public void updatePlayer(boolean phase) {
         String imagePath = phase ? IMG_PLAYER_PHASE2 : IMG_PLAYER;
         setImage(new ImageIcon(imagePath).getImage());
@@ -222,7 +246,11 @@ public class Player extends Sprite {
         throw new UnsupportedOperationException("Unimplemented method 'act'");
     }
 
-    public Rectangle getBounds() {
-        return new Rectangle(x, y, 128, 128); // or whatever size your player sprite is
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
     }
 }

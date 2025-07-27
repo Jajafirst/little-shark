@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class Enemy1 {
+public class Enemy1 extends Sprite {
     private int x, y;
     private final int speed = 2;
 
@@ -27,6 +27,17 @@ public class Enemy1 {
 
     private static BufferedImage[] sharedFramesEnemy1 = null;
 
+    private boolean hasHitPlayer = false;
+
+    public boolean hasHitPlayer() {
+        return hasHitPlayer;
+    }
+
+    public void setHasHitPlayer(boolean hasHitPlayer) {
+        this.hasHitPlayer = hasHitPlayer;
+    }
+
+    //_____________________________________
     public Enemy1(int panelWidth, int panelHeight) {
         this.x = panelWidth + new Random().nextInt(300); // appear offscreen
         this.y = new Random().nextInt(panelHeight - drawHeight - 50);
@@ -116,5 +127,11 @@ public class Enemy1 {
 
     public int getY() {
         return y;
+    }
+
+    @Override
+    public void act() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'act'");
     }
 }

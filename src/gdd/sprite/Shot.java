@@ -2,6 +2,8 @@ package gdd.sprite;
 
 import static gdd.Global.*;
 
+import java.awt.Rectangle;
+
 import javax.swing.ImageIcon;
 
 public class Shot extends Sprite {
@@ -26,6 +28,10 @@ public class Shot extends Sprite {
 
         setX(x + H_SPACE);
         setY(y - V_SPACE);
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, getWidth(), getHeight());
     }
 
     @Override
