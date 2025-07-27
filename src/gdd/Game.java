@@ -51,11 +51,11 @@ public class Game extends JFrame {
         repaint();
     }
     
-    public void loadScene2() {
+    public void loadScene2(int health) {
         getContentPane().removeAll();
         // titleScene.stop(); 
         add(scene2);
-        scene2.start();
+        scene2.start(health);
         revalidate();
         repaint();
     }

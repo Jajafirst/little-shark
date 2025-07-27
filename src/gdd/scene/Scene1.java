@@ -1,9 +1,7 @@
 // TODO 
 // - add sound effects
-// - add hitbox for player
 // FIXME
-// - load Scene2 when end the round intead of pressing space 
-// - delay spawn spawn player shots
+// - load Scene2 when end the round intead of pressing space
 
 package gdd.scene;
 
@@ -56,6 +54,7 @@ public class Scene1 extends JPanel {
     private List<Enemy1> enemy1List = new ArrayList<>();
     private List<Enemy2> enemy2List = new ArrayList<>();
 
+    // Player shots
     private List<Shot> shots = new ArrayList<>();
 
     public static void setCollectedLevel(int level) {
@@ -130,7 +129,7 @@ public class Scene1 extends JPanel {
             speedUp.update();
 
             Rectangle skillBox = speedUp.getBounds();
-            Rectangle playerBox = new Rectangle(player.getX(), player.getY(), 128, 128);
+            Rectangle playerBox = new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight());
 
             // Collected
             if (skillBox.intersects(playerBox)) {
@@ -187,7 +186,7 @@ public class Scene1 extends JPanel {
         if (!switchedToScene2 && currentSpeedLevel >= 4 && speedUp == null) {
             switchedToScene2 = true;
             System.out.println("✅ All SpeedUps collected! Switching scene...");
-            game.loadScene2();
+            game.loadScene2(player.getHealth());
         }
 
         // player shots
@@ -230,9 +229,10 @@ public class Scene1 extends JPanel {
         }
         shots.removeAll(toRemovesShots);
 
+
         // Player hitbox check - modified to only reduce health once per collision
         for (Enemy2 enemy2 : enemy2List) {
-            if (enemy2.getBounds().intersects(new Rectangle(player.getX(), player.getY(), 128, 128))) {
+            if (enemy2.getBounds().intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
                 // Only reduce health if this enemy hasn't hit the player before
                 if (!enemy2.hasHitPlayer()) {
                     player.setHealth(player.getHealth() - 10);
@@ -249,7 +249,7 @@ public class Scene1 extends JPanel {
             }
         }
         for (Enemy1 enemy1 : enemy1List) {
-            if (enemy1.getBounds().intersects(new Rectangle(player.getX(), player.getY(), 128, 128))) {
+            if (enemy1.getBounds().intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
                 // Only reduce health if this enemy hasn't hit the player before
                 if (!enemy1.hasHitPlayer()) {
                     player.setHealth(player.getHealth() - 10);
@@ -334,7 +334,7 @@ public class Scene1 extends JPanel {
 
             if (key == KeyEvent.VK_0) {
                 System.out.println("🔁 Switching to Scene2...");
-                game.loadScene2();
+                game.loadScene2(player.getHealth());
             }
 
             // Player shots
