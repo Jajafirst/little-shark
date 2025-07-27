@@ -1,3 +1,7 @@
+// TODO 
+// - fix Octopus Bullet disappear when it dies
+// - fix Boss pic(don’t know the code, wait for First)
+// - add boss health
 
 package gdd.scene;
 
