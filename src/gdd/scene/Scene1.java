@@ -198,10 +198,10 @@ public class Scene1 extends JPanel {
 
         player.update();
         updateShots();
-        playerHitBot();
+        playerHitBox();
     }
 
-    public void playerHitBot() {
+    public void playerHitBox() {
         // Player hitbox check - modified to only reduce health once per collision
         List<Enemy2> toRemovesEnemy2 = new ArrayList<>();
         for (Enemy2 enemy2 : enemy2List) {

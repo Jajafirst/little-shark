@@ -61,7 +61,9 @@ public class Game extends JFrame {
     }
 
     public void restartGame() {
+        getContentPane().removeAll();
         scene1 = new Scene1(this);
+        scene2 = new Scene2(this);
         loadScene1();
     }
 

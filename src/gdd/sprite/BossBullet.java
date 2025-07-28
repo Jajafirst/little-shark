@@ -56,4 +56,14 @@ public class BossBullet {
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
+
+    private boolean hitPlayer = false;
+
+    public boolean hasHitPlayer() {
+        return hitPlayer;
+    }
+
+    public void setHasHitPlayer(boolean hit) {
+        this.hitPlayer = hit;
+    }
 }

@@ -204,7 +204,7 @@ public class Scene2 extends JPanel {
         }
         player.update();
         updateShots();
-        playerHitBot();
+        playerHitBox();
 
         // Boss
         /* if (!bossSpawned && currentPowerLevel >= 4) {
@@ -213,10 +213,10 @@ public class Scene2 extends JPanel {
         } */
 
         if (boss != null) {
-            boss.setLaserActive(true); // keep laser logic
             boss.update();
+            boss.activateLaser();
 
-            // 🔥 Boss bullet spawning
+
             // 🔥 Boss bullet spawning
             if (rand.nextInt(100) < 2) {
                 int bulletX = boss.getBulletX();
@@ -242,7 +242,7 @@ public class Scene2 extends JPanel {
 
     }
 
-    public void playerHitBot() {
+    public void playerHitBox() {
         // Player hitbox check - modified to only reduce health once per collision
         List<Enemy2> toRemovesEnemy2 = new ArrayList<>();
         for (Enemy2 enemy2 : enemy2List) {
@@ -300,6 +300,40 @@ public class Scene2 extends JPanel {
             }
         }
         enemyBullets.removeAll(toRemovesBullets);
+
+        //_____ Check if player is hit by boss bullets
+        if (boss != null && boss.isLaserActive()) {
+            Rectangle laserBounds = boss.getLaserBounds();
+            Rectangle playerBox = new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight());
+
+            if (laserBounds.intersects(playerBox)) {
+                if (!boss.hasHitPlayerWithLaser()) { // Prevent multiple hits from same laser
+                    player.setHealth(player.getHealth() - 15); // Big damage from laser
+                    player.setHurt(true);
+                    boss.setHasHitPlayerWithLaser(true); // Mark laser as having hit
+                    System.out.println("🔥 Player hit by laser! Health: " + player.getHealth());
+                }
+            } else {
+                boss.setHasHitPlayerWithLaser(false); // Reset when not intersecting
+            }
+        }
+
+        // Check if player is hit by boss bullets
+        List<BossBullet> toRemoveBossBullets = new ArrayList<>();
+        for (BossBullet bullet : bossBullets) {
+            if (bullet.getBounds().intersects(new Rectangle(player.getX(), player.getY(),
+                    player.getWidth(), player.getHeight()))) {
+                if (!bullet.hasHitPlayer()) {
+                    player.setHealth(player.getHealth() - 10); // Damage from boss bullet
+                    player.setHurt(true);
+                    bullet.setHasHitPlayer(true);
+                    toRemoveBossBullets.add(bullet);
+                    System.out.println("💥 Hit by boss bullet! Health: " + player.getHealth());
+                }
+            }
+        }
+        bossBullets.removeAll(toRemoveBossBullets);
+
     }
 
     // ____________________________________________
@@ -330,12 +364,30 @@ public class Scene2 extends JPanel {
 
         drawPlayerHealth(g);
 
+        if (boss != null) {
+            g.drawImage(boss.getImage(), boss.getX(), boss.getY(), this);
+            drawBossHealth(g);
+        }
+        
+
         for (BossBullet bullet : bossBullets) {
             bullet.draw(g, this);
         }
 
         for (EnemyBullet bullet : enemyBullets) {
             bullet.draw(g, this);
+        }
+
+        if (boss != null) {
+            boss.drawLaser(g);
+
+            if (boss.isLaserActive()) {
+                Rectangle laserBounds = boss.getLaserBounds();
+                if ((new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight())).intersects(laserBounds)) {
+                    System.out.println("🔥 Player hit by laser!");
+                    // player.setDead(true);
+                }
+            }
         }
 
         // Game Over screen
@@ -427,7 +479,7 @@ public class Scene2 extends JPanel {
             int key = e.getKeyCode();
 
             if (key == KeyEvent.VK_0) {
-                boss = new Boss(BOARD_WIDTH - 100, 195);
+                boss = new Boss(BOARD_WIDTH - 210, 230);
             bossSpawned = true;
             }
 
@@ -478,21 +530,7 @@ public class Scene2 extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        draw(g); // background, enemies, etc.
-
-        if (boss != null) {
-            boss.drawLaser(g);
-            boss.draw(g, this);
-
-            if (boss.isLaserActive()) {
-                Rectangle laserBounds = boss.getLaserBounds();
-                if ((new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))
-                        .intersects(laserBounds)) {
-                    System.out.println("🔥 Player hit by laser!");
-                    // player.setDead(true);
-                }
-            }
-        }
+        draw(g);
     }
 
     private void doGameCycle() {
@@ -512,7 +550,7 @@ public class Scene2 extends JPanel {
             int iconSize = 48;
             int padding = 10;
             int x = BOARD_WIDTH - iconSize - padding;
-            int y = padding;
+            int y = padding + 30;
             g.drawImage(powerIcon, x, y, iconSize, iconSize, this);
         }
     }
@@ -723,5 +761,33 @@ public class Scene2 extends JPanel {
         g.setColor(Color.WHITE);
         g.drawString(healthText, textX, textY);
         g.drawString(scoreText, scoreTextX, scoreTextY);
+    }
+
+    //_____________________________________________
+    private void drawBossHealth(Graphics g) {
+        int boxWidth = 300;
+        int boxHeight = 20;
+        int boxX = BOARD_WIDTH - boxWidth - 10;
+        int boxY = 10;
+
+        float healthPercent = (float) boss.getHealth() / 1000f;
+
+        // Background
+        g.setColor(new Color(30, 30, 40, 200));
+        g.fillRoundRect(boxX, boxY, boxWidth, boxHeight, 5, 5);
+
+        // Health bar
+        g.setColor(healthPercent > 0.3f ? Color.RED : Color.ORANGE);
+        g.fillRoundRect(boxX + 2, boxY + 2, (int) ((boxWidth - 4) * healthPercent), boxHeight - 4, 3, 3);
+
+        // Border
+        g.setColor(new Color(200, 200, 200, 150));
+        g.drawRoundRect(boxX, boxY, boxWidth, boxHeight, 5, 5);
+
+        // Text
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 12));
+        String text = "BOSS: " + boss.getHealth() + "/1000";
+        g.drawString(text, boxX + 10, boxY + 15);
     }
 }

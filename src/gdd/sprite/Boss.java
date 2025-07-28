@@ -1,207 +1,263 @@
 package gdd.sprite;
 
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
+import javax.swing.*;
 
 import static gdd.Global.IMG_BOSS;
-import static gdd.Global.IMG_PLAYER;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import gdd.sprite.BossBullet;
+import javax.imageio.ImageIO;
 import java.util.Random;
 
-public class Boss {
-    private int x, y;
-    private BufferedImage spriteSheet;
-    private BufferedImage[] frames;
-    private int currentFrame = 0;
-    private long lastFrameTime = 0;
-    private final int FRAME_DELAY = 120;
-
+public class Boss extends Sprite {
+    private static final int SCREEN_HEIGHT = 720;
+    
+    // Boss actions
+    private String action = "idle"; // Default action
+    private static final String IDLE = "idle";
+    private static final String ATTACK = "attack";
+    private static final String HURT = "hurt";
+    
+    // Laser attack
     private boolean laserActive = false;
     private float laserOpacity = 0.25f;
     private long chargeStartTime;
-
-    private int laserOffsetY;
-    private double laserAngle = 0; // current laser angle in radians
-    private final int MAX_ANGLE = 15; // maximum random angle in degrees
-
     private final int PHASE1 = 500;
     private final int PHASE2 = 1000;
     private final int PHASE3 = 1500;
-
-    private final int FRAME_COUNT = 8;
-    private final int FRAME_WIDTH = 320;
-    private final int FRAME_HEIGHT = 320;
-    private final int DISPLAY_WIDTH = 320;
-    private final int DISPLAY_HEIGHT = 320;
-
-    private final int SCREEN_HEIGHT = 720;
-    private final int BOSS_BOTTOM_MARGIN = 0;
-    private final int LASER_OFFSET_RANGE = 60;
-
-    private int zIndex = 1000; // 🔥 Boss always top layer
-
-    private Random random = new Random();
-    private Component boss;
-
+    
+    // Animation
+    public int frame = 0;
+    private int animationDelay = 0;
+    private final int ANIMATION_SPEED = 8;
     private int clipNo = 0;
     private final Rectangle[] clips = new Rectangle[] {
-        // Walking
-        new Rectangle(0, 0, 55, 96),  // Frame 0
-        new Rectangle(103, 0, 55, 96),  // Frame 1
-        new Rectangle(103, 0, 55, 96),  // Frame 1
+            new Rectangle(0, 0, 100, 96), // Frame 0
+            new Rectangle(103, 0, 100, 96), // Frame 1
+            new Rectangle(212, 0, 100, 96), // Frame 2
+            new Rectangle(309, 0, 100, 96), // Frame 3
+            new Rectangle(420, 0, 100, 96), // Frame 4
+            new Rectangle(515, 0, 100, 96), // Frame 5
+            new Rectangle(628, 0, 100, 96), // Frame 6
+            new Rectangle(740, 0, 60, 96), // Frame 7
 
+            // Attack frames (if different size)
+            new Rectangle(0, 96, 150, 96), // Attack Frame 0
+            new Rectangle(150, 96, 150, 96), // Attack Frame 1
+
+            // Hurt frame
+            new Rectangle(300, 96, 103, 96) // Hurt Frame
     };
+    
+    private Random random = new Random();
+    private double laserAngle = 0;
+    private final int MAX_ANGLE = 15;
+    private int health = 1000; // Boss has more health
 
-
-    //________________________________________________
-    /** ✅ Constructor 1: Auto bottom alignment (only X) */
-    public Boss(int x) {
-        this.x = x;
-        this.y = SCREEN_HEIGHT - DISPLAY_HEIGHT - BOSS_BOTTOM_MARGIN;
-        init();
-    }
-
-    /** ✅ Constructor 2: Manual X and Y */
     public Boss(int x, int y) {
         this.x = x;
         this.y = y;
-        init();
+        initBoss();
     }
 
-    /** Shared init code */
-    private void init() {
-        loadSpriteSheet();
-        sliceFrames();
-        pickNewLaserOffset();
-    }
+    private void initBoss() {
+        var icon = new ImageIcon(IMG_BOSS);
+        if (icon.getImageLoadStatus() != java.awt.MediaTracker.COMPLETE) {
+            System.err.println("Error: Boss image not loaded properly");
+        }
 
-    private void loadSpriteSheet() {
-        try {
-            var icon = new ImageIcon(IMG_PLAYER);
-        } catch (IOException e) {
-            System.out.println("❌ Failed to load boss sprite sheet");
-            e.printStackTrace();
+        int scale = 3; // Make boss 3x bigger
+        Image scaledImage = icon.getImage().getScaledInstance(
+                icon.getIconWidth() * scale,
+                icon.getIconHeight() * scale,
+                Image.SCALE_SMOOTH);
+
+        setImage(scaledImage);
+
+        for (int i = 0; i < clips.length; i++) {
+            Rectangle old = clips[i];
+            clips[i] = new Rectangle(
+                    old.x * scale,
+                    old.y * scale,
+                    old.width * scale,
+                    old.height * scale);
         }
     }
 
-    private void sliceFrames() {
-        if (spriteSheet == null)
-            return;
-        frames = new BufferedImage[FRAME_COUNT];
-        for (int i = 0; i < FRAME_COUNT; i++) {
-            frames[i] = spriteSheet.getSubimage(i * FRAME_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT);
-        }
-    }
-
-    private void pickNewLaserOffset() {
-        laserOffsetY = -LASER_OFFSET_RANGE + random.nextInt(LASER_OFFSET_RANGE * 2);
-        laserAngle = Math.toRadians(-MAX_ANGLE + random.nextInt(MAX_ANGLE * 2));
-    }
 
     public void update() {
-        animate();
+        // Animation
+        animationDelay++;
+        if (animationDelay >= ANIMATION_SPEED) {
+            animationDelay = 0;
+            frame++;
+            
+            switch (action) {
+                case IDLE:
+                    clipNo = frame % 8; // Cycle through idle frames
+                    break;
+                    
+                case ATTACK:
+                    if (frame < 2) { // Only 2 attack frames
+                        clipNo = 3 + frame;
+                    } else {
+                        action = IDLE;
+                        frame = 0;
+                    }
+                    break;
+                    
+                case HURT:
+                    if (frame < 1) { // Only 1 hurt frame
+                        clipNo = 5;
+                    } else {
+                        action = IDLE;
+                        frame = 0;
+                    }
+                    break;
+            }
+            if (random.nextInt(200) < 1 && !laserActive) { // 0.5% chance per frame
+                activateLaser();
+            }
 
+        }
+        
+        // Laser logic
         if (laserActive) {
             long elapsed = System.currentTimeMillis() - chargeStartTime;
-
+            
             if (elapsed < PHASE1) {
                 laserOpacity = 0.25f;
             } else if (elapsed < PHASE2) {
                 laserOpacity = 0.5f;
+                action = ATTACK;
+                frame = 0;
             } else if (elapsed < PHASE3) {
                 laserOpacity = 1.0f;
             } else {
-                // ✅ Turn laser off and pick new Y & angle
                 laserActive = false;
                 laserOpacity = 0f;
-                pickNewLaserOffset();
-                System.out.println("🔻 Laser OFF + New Y/Angle");
+                randomizeLaserAngle();
+                action = IDLE;
+                frame = 0;
             }
         }
     }
-
-    private void animate() {
-        if (frames == null)
-            return;
-        if (System.currentTimeMillis() - lastFrameTime > FRAME_DELAY) {
-            currentFrame = (currentFrame + 1) % frames.length;
-            lastFrameTime = System.currentTimeMillis();
-        }
+    
+    private void randomizeLaserAngle() {
+        laserAngle = Math.toRadians(-MAX_ANGLE + random.nextInt(MAX_ANGLE * 2));
     }
-
-    public void draw(Graphics g, Component observer) {
-        if (frames != null && frames[currentFrame] != null) {
-            g.drawImage(frames[currentFrame], x, y, DISPLAY_WIDTH, DISPLAY_HEIGHT, observer);
-        }
-    }
-
+    
     public void drawLaser(Graphics g) {
-        if (!laserActive || laserOpacity <= 0f)
-            return;
-
-        Graphics2D g2d = (Graphics2D) g.create();
+        if (!laserActive || laserOpacity <= 0f) return;
+        
+        Graphics2D g2d = (Graphics2D)g.create();
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, laserOpacity));
         g2d.setColor(Color.RED);
         g2d.setStroke(new BasicStroke(8));
+        
+        int startX = x + (int) (getWidth() * 0.9); // 90% from left
+        int startY = y + (int) (getHeight() * 0.3); // 30% from top
 
-        // ✅ Fixed start point (eye/head position)
-        int startX = x + DISPLAY_WIDTH - 40; // Adjust to eye X
-        int startY = y + DISPLAY_HEIGHT / 4; // Adjust to eye Y
-
-        // 🔥 Calculate angle and force beam to x=0 at left edge
+        
         double dx = Math.cos(laserAngle);
         double dy = Math.sin(laserAngle);
-
         double t = startX / dx;
         int endX = 0;
-        int endY = (int) (startY - dy * t);
-
+        int endY = (int)(startY - dy * t);
+        
         g2d.drawLine(startX, startY, endX, endY);
         g2d.dispose();
     }
-
-    public void setLaserActive(boolean active) {
-        if (active && !laserActive) {
+    
+    public void activateLaser() {
+        if (!laserActive) {
             this.chargeStartTime = System.currentTimeMillis();
             this.laserOpacity = 0.25f;
+            randomizeLaserAngle();
         }
-        this.laserActive = active;
+        this.laserActive = true;
     }
-
+    
+    // Getters and setters matching Player class structure
+    @Override
+    public int getWidth() {
+        return clips[clipNo].width;
+    }
+    
+    @Override
+    public int getHeight() {
+        return clips[clipNo].height;
+    }
+    
+    @Override
+    public Image getImage() {
+        Rectangle bound = clips[clipNo];
+        BufferedImage bImage = toBufferedImage(image);
+        return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
+    }
+    
+    public Rectangle getLaserBounds() {
+        if (!laserActive) return new Rectangle();
+        int startX = x + getWidth() - 40;
+        int startY = y + getHeight() / 4;
+        return new Rectangle(0, startY - 12, startX, 24);
+    }
+    
     public boolean isLaserActive() {
         return laserActive;
     }
-
-    public Rectangle getLaserBounds() {
-        if (!laserActive)
-            return new Rectangle(0, 0, 0, 0);
-        int startX = x + DISPLAY_WIDTH / 2;
-        int startY = y + DISPLAY_HEIGHT / 2 + laserOffsetY;
-        return new Rectangle(0, startY - 12, startX, 24);
+    
+    public int getHealth() {
+        return health;
     }
-
-    public Rectangle getBounds() {
-        return new Rectangle(x, y, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    
+    public void setHealth(int health) {
+        this.health = health;
+        if (health < this.health) { // If took damage
+            this.action = HURT;
+            this.frame = 0;
+        }
+        this.health = Math.max(0, health);
     }
-
-    public int getZIndex() {
-        return zIndex;
-    }
-
-    public void setZIndex(int z) {
-        this.zIndex = z;
-    }
-
+    
     public int getBulletX() {
-        return x + DISPLAY_WIDTH - 40; // adjust to mouth/eye X
+        return x + (int) (getWidth() * 0.9);
     }
 
     public int getBulletY() {
-        return y + DISPLAY_HEIGHT / 3; // adjust to mouth/eye Y
+        return y + (int) (getHeight() * 0.4);
     }
+
+    @Override
+    public void act() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'act'");
+    }
+
+    private boolean laserHitPlayer = false;
+
+    public boolean hasHitPlayerWithLaser() {
+        return laserHitPlayer;
+    }
+
+    public void setHasHitPlayerWithLaser(boolean hit) {
+        this.laserHitPlayer = hit;
+    }
+
+    /* public Rectangle getLaserBounds() {
+        if (!laserActive)
+            return new Rectangle();
+
+        int startX = x + getWidth() - 40;
+        int startY = y + getHeight() / 4;
+        int endX = 0;
+        int endY = (int) (startY - Math.tan(laserAngle) * startX);
+
+        // Create a wider rectangle for the laser's hitbox
+        int laserWidth = 20; // Wider than visual laser for better gameplay
+        return new Rectangle(0, Math.min(startY, endY) - laserWidth / 2,
+                startX, Math.abs(endY - startY) + laserWidth);
+    } */
 }
