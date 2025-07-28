@@ -21,7 +21,7 @@ public class Enemy1 extends Sprite {
     private final int animationDelay = 8;
 
     private long lastShotTime = 0;
-    private static final int SHOT_INTERVAL = 2000; // 2 seconds
+    private static final int SHOT_INTERVAL = 5000; // 5 seconds
 
     private static BufferedImage[] sharedFramesEnemy1 = null;
 

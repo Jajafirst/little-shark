@@ -12,7 +12,7 @@ import java.util.Timer;
 import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
-    private static int speedY = 5; // Added default speed
+    private static int speedY = 3; // Added default speed
 
   //  private static final int speedY = 5; // Added default speed
     
@@ -269,4 +269,15 @@ public class Player extends Sprite {
     public void setSHOT_DELAY(long SHOT_DELAY) {
         this.SHOT_DELAY = SHOT_DELAY;
     }
+
+    public void applySpeedLevel(int level) {
+        int[] SPEED_VALUES = { 5, 7, 9, 10 }; // LV1-LV4 speeds
+        if (level < 1)
+            level = 1;
+        if (level > 4)
+            level = 4;
+        speedY = SPEED_VALUES[level - 1];
+        System.out.println("🏎️ Player speed set to LV" + level + " (speedY=" + speedY + ")");
+    }
+
 }

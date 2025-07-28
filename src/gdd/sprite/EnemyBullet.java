@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class EnemyBullet {
     private int x, y;
-    private final int speed = 8;
+    private final int speed = 4;
     private final int width = 32;
     private final int height = 32;
     private BufferedImage image;

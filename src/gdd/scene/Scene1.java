@@ -36,6 +36,7 @@ public class Scene1 extends JPanel {
     private Player player;
     private Timer timer;
 
+
     // Background and Parallax
     private Image staticBg;
     private Image parallaxBg;
@@ -49,7 +50,7 @@ public class Scene1 extends JPanel {
     private int currentSpeedLevel = 0;
     private boolean firstSpawned = false;
     private long lastSpawnTime = 0;
-    private static final long SPAWN_INTERVAL = 6_000;
+    private static final long SPAWN_INTERVAL = 60_000;
 
     // Enemies
     private List<Enemy1> enemy1List = new ArrayList<>();
@@ -139,12 +140,14 @@ public class Scene1 extends JPanel {
             // Collected
             if (skillBox.intersects(playerBox)) {
                 currentSpeedLevel = speedUp.getLevel();
+                player.applySpeedLevel(currentSpeedLevel); // ✅ Apply movement speed when collected
                 updateSpeedIcon(currentSpeedLevel);
                 SpeedUp.setCollectedLevel(currentSpeedLevel);
                 speedUp = null;
                 lastSpawnTime = System.currentTimeMillis();
                 System.out.println("🎯 Collected SpeedUp LV" + currentSpeedLevel);
             }
+
 
             // Missed
             else if (speedUp.getX() + speedUp.getWidth() < 0) {
@@ -199,6 +202,13 @@ public class Scene1 extends JPanel {
         player.update();
         updateShots();
         playerHitBox();
+
+        // Auto switch to Scene2 when done
+        if (!switchedToScene2 && currentSpeedLevel >= 4 && speedUp == null) {
+            switchedToScene2 = true;
+            System.out.println("✅ All SpeedUps collected! Switching scene...");
+            game.loadScene2(player.getHealth(), score);
+        }
     }
 
     public void playerHitBox() {

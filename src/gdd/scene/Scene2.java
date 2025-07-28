@@ -51,7 +51,7 @@ public class Scene2 extends JPanel {
     private int currentPowerLevel = 0;
     private boolean firstSpawned = false;
     private long lastSpawnTime = 0;
-    private static final long SPAWN_INTERVAL = 6_000;
+    private static final long SPAWN_INTERVAL = 60_000;
 
     // Enemies
     private List<Enemy1> enemy1List = new ArrayList<>();
@@ -163,7 +163,10 @@ public class Scene2 extends JPanel {
         }
 
         // Enemy 1 : shot the bullet
-        int MAX_ENEMY1 = 1;
+        int MAX_ENEMY1 = 2;
+        if (bossSpawned) {
+            MAX_ENEMY1 = 1;
+        }
         if (enemy1List.size() < MAX_ENEMY1 && rand.nextInt(100) < 2) {
             Enemy1 e1 = new Enemy1(BOARD_WIDTH, BOARD_HEIGHT);
             e1.setShootListener(b -> enemyBullets.add(b)); // ✅ attach bullets to Scene2
@@ -189,7 +192,10 @@ public class Scene2 extends JPanel {
         }
 
         // Enemy 2
-        int MAX_ENEMIES = 2;
+        int MAX_ENEMIES = 3;
+        if (bossSpawned) {
+            MAX_ENEMIES = 2;
+        }
         if (enemy2List.size() < MAX_ENEMIES && rand.nextInt(100) < 2) {
             enemy2List.add(new Enemy2(BOARD_WIDTH, BOARD_HEIGHT));
             System.out.println("🦈 Spawned Enemy2 (total: " + enemy2List.size() + ")");
@@ -207,10 +213,10 @@ public class Scene2 extends JPanel {
         playerHitBox();
 
         // Boss
-        /* if (!bossSpawned && currentPowerLevel >= 4) {
-            boss = new Boss(BOARD_WIDTH - 60, 195);
+        if (!bossSpawned && currentPowerLevel >= 4) {
+            boss = new Boss(BOARD_WIDTH - 210, 230);
             bossSpawned = true;
-        } */
+        }
 
         if (boss != null) {
             boss.update();
@@ -511,7 +517,7 @@ public class Scene2 extends JPanel {
 
             if (key == KeyEvent.VK_0) {
                 boss = new Boss(BOARD_WIDTH - 210, 230);
-            bossSpawned = true;
+                bossSpawned = true;
             }
             if (key == KeyEvent.VK_9) {
                 boss.setHealth(10);
