@@ -1,7 +1,7 @@
 // TODO 
 // - add sound effects
 // FIXME
-// - load Scene2 when end the round intead of pressing space 
+// - load Scene2 when end the round intead of pressing space
 
 package gdd.scene;
 
@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 
 import gdd.sprite.Enemy1;
 import gdd.sprite.Enemy2;
+import gdd.sprite.EnemyBullet;
 import gdd.sprite.Player;
 import gdd.sprite.Shot;
 import gdd.powerup.SpeedUp;
@@ -48,12 +49,15 @@ public class Scene1 extends JPanel {
     private int currentSpeedLevel = 0;
     private boolean firstSpawned = false;
     private long lastSpawnTime = 0;
-    private static final long SPAWN_INTERVAL = 6_000; 
+    private static final long SPAWN_INTERVAL = 6_000;
 
     // Enemies
-    private List<Enemy2> enemies = new ArrayList<>();
     private List<Enemy1> enemy1List = new ArrayList<>();
+    private List<Enemy2> enemy2List = new ArrayList<>();
+    // Enemy bullets
+    private List<EnemyBullet> enemyBullets = new ArrayList<>();
 
+    // Player shots
     private List<Shot> shots = new ArrayList<>();
 
     public static void setCollectedLevel(int level) {
@@ -66,6 +70,7 @@ public class Scene1 extends JPanel {
 
     private Random rand = new Random();
 
+    // ____________________________________________
     public Scene1(Game game) {
         this.game = game;
     }
@@ -79,7 +84,6 @@ public class Scene1 extends JPanel {
         gameInit();
         System.out.println("✅ Scene1 started");
 
-        
         timer = new Timer(DELAY, new GameCycle());
         timer.start();
     }
@@ -89,11 +93,12 @@ public class Scene1 extends JPanel {
         ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/final-scene1.png");
         parallaxBg = parallaxIcon.getImage();
 
-        // speedUp 
+        // speedUp
         ImageIcon speedIconImg = new ImageIcon("./src/assets/sprites/speedSkill1.png");
         speedIcon = speedIconImg.getImage();
 
         player = new Player();
+        player.setHealth(100);
     }
 
     public void update() {
@@ -127,7 +132,7 @@ public class Scene1 extends JPanel {
             speedUp.update();
 
             Rectangle skillBox = speedUp.getBounds();
-            Rectangle playerBox = new Rectangle(player.getX(), player.getY(), 128, 128);
+            Rectangle playerBox = new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight());
 
             // Collected
             if (skillBox.intersects(playerBox)) {
@@ -150,7 +155,9 @@ public class Scene1 extends JPanel {
         // Enemy 1 : shot the bullet
         int MAX_ENEMY1 = 2;
         if (enemy1List.size() < MAX_ENEMY1 && rand.nextInt(100) < 2) {
-            enemy1List.add(new Enemy1(BOARD_WIDTH, BOARD_HEIGHT));
+            Enemy1 e1 = new Enemy1(BOARD_WIDTH, BOARD_HEIGHT);
+            e1.setShootListener(b -> enemyBullets.add(b)); // ✅ Attach bullets to Scene
+            enemy1List.add(e1);
             System.out.println("🐙 Spawned Enemy1 (total: " + enemy1List.size() + ")");
         }
         Iterator<Enemy1> it1 = enemy1List.iterator();
@@ -164,17 +171,26 @@ public class Scene1 extends JPanel {
 
         // Enemy 2 : just dive
         int MAX_ENEMIES = 3;
-        if (enemies.size() < MAX_ENEMIES && rand.nextInt(100) < 2) {
-            enemies.add(new Enemy2(BOARD_WIDTH, BOARD_HEIGHT));
-            System.out.println("🦈 Spawned Enemy2 (total: " + enemies.size() + ")");
+        if (enemy2List.size() < MAX_ENEMIES && rand.nextInt(100) < 2) {
+            enemy2List.add(new Enemy2(BOARD_WIDTH, BOARD_HEIGHT));
+            System.out.println("🦈 Spawned Enemy2 (total: " + enemy2List.size() + ")");
         }
 
-        Iterator<Enemy2> it = enemies.iterator();
+        Iterator<Enemy2> it = enemy2List.iterator();
         while (it.hasNext()) {
             Enemy2 e = it.next();
             e.update();
             if (e.getX() + e.getWidth() < 0) {
                 it.remove();
+            }
+        }
+
+        Iterator<EnemyBullet> bulletIter = enemyBullets.iterator();
+        while (bulletIter.hasNext()) {
+            EnemyBullet bullet = bulletIter.next();
+            bullet.update();
+            if (bullet.getX() + bullet.getWidth() < 0) { // off-screen cleanup
+                bulletIter.remove();
             }
         }
 
@@ -184,16 +200,30 @@ public class Scene1 extends JPanel {
         if (!switchedToScene2 && currentSpeedLevel >= 4 && speedUp == null) {
             switchedToScene2 = true;
             System.out.println("✅ All SpeedUps collected! Switching scene...");
-            game.loadScene2();
+            game.loadScene2(player.getHealth());
         }
 
         // player shots
-        // FIXME gonna need to add hit box for enemies
         List<Shot> toRemovesShots = new ArrayList<>();
         for (Shot shot : shots) {
             if (shot.isVisible()) {
-                int shotX = shot.getX();
-                int shotY = shot.getY();
+
+                // Kill enemy1 when shot hits
+                for (Enemy1 enemy1 : enemy1List) {
+                    if (enemy1.getBounds().intersects(shot.getBounds())) {
+                        enemy1List.remove(enemy1);
+                        toRemovesShots.add(shot);
+                        break; // Exit loop after hit
+                    }
+                }
+                // Kill enemy2 when shot hits
+                for (Enemy2 enemy2 : enemy2List) {
+                    if (enemy2.getBounds().intersects(shot.getBounds())) {
+                        enemy2List.remove(enemy2);
+                        toRemovesShots.add(shot);
+                        break; // Exit loop after hit
+                    }
+                }
 
                 // Speed up shot
                 int x = shot.getX();
@@ -212,6 +242,45 @@ public class Scene1 extends JPanel {
             }
         }
         shots.removeAll(toRemovesShots);
+
+        // Player hitbox check - modified to only reduce health once per collision
+        for (Enemy2 enemy2 : enemy2List) {
+            if (enemy2.getBounds()
+                    .intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
+                // Only reduce health if this enemy hasn't hit the player before
+                if (!enemy2.hasHitPlayer()) {
+                    player.setHealth(player.getHealth() - 10);
+                    enemy2.setHasHitPlayer(true); // Mark this enemy as having hit the player
+                    System.out.println("💥 Player hit! Health: " + player.getHealth());
+                    if (player.getHealth() <= 0) {
+                        System.out.println("💀 Player died!");
+                        // Handle player death (e.g., game over)
+                    }
+                }
+            } else {
+                // Reset the flag when the enemy is no longer colliding
+                enemy2.setHasHitPlayer(false);
+            }
+        }
+        for (Enemy1 enemy1 : enemy1List) {
+            if (enemy1.getBounds()
+                    .intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
+                // Only reduce health if this enemy hasn't hit the player before
+                if (!enemy1.hasHitPlayer()) {
+                    player.setHealth(player.getHealth() - 10);
+                    enemy1.setHasHitPlayer(true); // Mark this enemy as having hit the player
+                    System.out.println("💥 Player hit! Health: " + player.getHealth());
+                    if (player.getHealth() <= 0) {
+                        System.out.println("💀 Player died!");
+                        // Handle player death (e.g., game over)
+                    }
+                }
+            } else {
+                // Reset the flag when the enemy is no longer colliding
+                enemy1.setHasHitPlayer(false);
+            }
+        }
+
     }
 
     public void draw(Graphics g) {
@@ -235,21 +304,25 @@ public class Scene1 extends JPanel {
             speedUp.draw(g, this);
         }
 
+        for (EnemyBullet bullet : enemyBullets) {
+            bullet.draw(g, this);
+        }
+
         // Draw player on top
         drawPlayer(g);
         drawShots(g);
 
         // Speed Icon
         drawPowerUpUI(g);
+        drawEnemies(g);
+    }
 
-        // enemy1
-        for (Enemy1 e1 : enemy1List) {
-            e1.draw(g, this);
+    public void drawEnemies(Graphics g) {
+        for (Enemy1 enemy1 : enemy1List) {
+            enemy1.draw(g, this);
         }
-
-        // enemy2
-        for (Enemy2 enemy : enemies) {
-            enemy.draw(g, this);
+        for (Enemy2 enemy2 : enemy2List) {
+            enemy2.draw(g, this);
         }
     }
 
@@ -268,6 +341,7 @@ public class Scene1 extends JPanel {
         }
     }
 
+    // _____________________________________________KeyListener
     private class TAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
@@ -279,10 +353,13 @@ public class Scene1 extends JPanel {
 
             if (key == KeyEvent.VK_0) {
                 System.out.println("🔁 Switching to Scene2...");
-                game.loadScene2();
+                game.loadScene2(player.getHealth());
             }
-            if (key == KeyEvent.VK_SPACE && shots.size() < 4) {
-                shots.add(new Shot(x ,y));
+
+            // Player shots
+            if (key == KeyEvent.VK_SPACE && shots.size() < 4 && player.shootingDelay()) {
+                shots.add(new Shot(x, y));
+                player.setLastShotTime(System.currentTimeMillis());
             }
 
         }
@@ -294,7 +371,6 @@ public class Scene1 extends JPanel {
     }
 
     // _____________________________________________
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

@@ -33,7 +33,7 @@ public class Global {
     public static final String IMG_PLAYER = "./src/assets/sprites/player.png";
     public static final String IMG_PLAYER_PHASE2 = "./src/assets/sprites/playerPhase02.png";
     public static final String IMG_SHOT = "./src/assets/sprites/playerbullet.png";
-    public static final String IMG_EXPLOSION = "src/imagses/explosion.png";
+    public static final String IMG_EXPLOSION = "./src/assets/sprites/explosion.png";
     public static final String IMG_TITLE = "./src/assets/background/title.png";
     public static final String IMG_POWERUP_SPEEDUP = "src/images/powerup-s.png";
 

@@ -1,7 +1,3 @@
-// FIXME
-// - the switching animation is not smooth yet, maybe change to be switch case might help.
-// - when shooting, the system shoots but the player doesn't change to shooting animation immediately.
-
 package gdd.sprite;
 
 import static gdd.Global.*;
@@ -27,8 +23,7 @@ public class Player extends Sprite {
 
     private boolean upPressed, downPressed;
 
-    private boolean shoot;
-
+    // Player actions
     private String action = WALK; // Default action
 
     private static final String WALK = "walk";
@@ -37,11 +32,19 @@ public class Player extends Sprite {
     private static final String DIE = "die";
 
     private boolean isShooting = false;
+    private boolean isHurt = false;
+
+    // Player Shots timing
+    private long lastShotTime = 0;
+    private static final long SHOT_DELAY = 1000; // 1000 milliseconds (1 second) between player shots
+
+    // Player Health
+    private int health; // Example health value, adjust as needed
 
     // Animation
     public int frame = 0;
     private int animationDelay = 0;
-    private final int ANIMATION_SPEED = 8; // Higher = slower animation
+    private final int ANIMATION_SPEED = 6; // Higher = slower animation
     private int clipNo = 0;
     private final Rectangle[] clips = new Rectangle[] {
            
@@ -77,6 +80,7 @@ public class Player extends Sprite {
 
     };
 
+    //____________________________________
     public Player() {
         initPlayer();
     }
@@ -92,6 +96,7 @@ public class Player extends Sprite {
     }
 
     public void update() {
+        //_______Movement
         if (upPressed) {
             y = Math.max(0, y - speedY);
         }
@@ -99,42 +104,63 @@ public class Player extends Sprite {
             y = Math.min(SCREEN_HEIGHT - getHeight(), y + speedY);
         }
 
-        // Handle animation
+        //_______Animation
         animationDelay++;
         if (animationDelay >= ANIMATION_SPEED) {
             animationDelay = 0;
-
-
-            /* if (shoot) {
-                frame = (frame + 1) % 4 + 5; // Loop through frames 5-8 for shooting
-                clipNo = frame; // Use frames 5-9 for shooting
-                shoot = false; // Reset shoot after one frame
-            } else {
-                frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
-                clipNo = frame; // Use frames 0-4 for walking
-            } */
+            frame++;
 
             switch (action) {
                 case WALK:
-                    frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
-                    clipNo = frame; // Use frames 0-4 for walking
+                    // Handle walk animation cycling
+                    clipNo = frame % 5; // Cycle through walk frames 0-4
+
+                    // Check for immediate actions that should interrupt walk animation
+                    if (isShooting) {
+                        action = SHOOT;
+                        frame = 0; // Reset frame counter for shoot animation
+                        clipNo = 5; // First shoot frame
+                        isShooting = false;
+                    } else if (isHurt) {
+                        action = HURT;
+                        frame = 0;
+                        clipNo = 9; // First hurt frame
+                        isHurt = false;
+                    }
                     break;
 
                 case SHOOT:
-                    frame = (frame + 1) % 4 + 5; // Loop through frames 5-8 for shooting
-                    clipNo = frame; // Use frames 5-8 for shooting
-                    action = WALK; // Reset action to WALK after shooting
+                    if (frame < 4) {
+                        clipNo = 5 + frame; // Play shoot frames 5-8
+                    } else {
+                        action = WALK; // Return to walking
+                        frame = 0;
+                    }
                     break;
 
                 case HURT:
-                    frame = (frame + 1) % 2 + 9; // Loop through frames 9-15 for hurting
-                    clipNo = frame; // Use frames 9-15 for hurting
-                    break;
-
-                default:
+                    if (frame < 2) {
+                        clipNo = 9 + frame; // Play hurt frames 9-10
+                    } else {
+                        action = WALK; // Return to walking
+                        frame = 0;
+                    }
                     break;
             }
         }
+    }
+
+    public boolean shootingDelay() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastShotTime >= SHOT_DELAY) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void setLastShotTime(long lastShotTime) {
+        this.lastShotTime = lastShotTime;
     }
 
     // Input handling
@@ -142,13 +168,16 @@ public class Player extends Sprite {
         int key = e.getKeyCode();
 
         switch (key) {
-            case KeyEvent.VK_RIGHT:
-                action = SHOOT;
-                System.out.println("🏀Shooting action triggered");
+            case KeyEvent.VK_SPACE:
+                if (shootingDelay()) {
+                    isShooting = true;
+                }else {
+                    isShooting = false;
+                }
                 break;
 
             case KeyEvent.VK_1:
-                action = HURT;
+                isHurt = true;
                 break;
                 
             default:
@@ -181,8 +210,7 @@ public class Player extends Sprite {
                 action = WALK; // Reset action to WALK when UP or DOWN is released
                 break; */
             
-            case KeyEvent.VK_RIGHT:
-                action = WALK; // Reset action to WALK when RIGHT is released
+            case KeyEvent.VK_SPACE:
                 break;
         
             default:
@@ -190,6 +218,7 @@ public class Player extends Sprite {
         }
     }
 
+    //_____________________________________
     public void updatePlayer(boolean phase) {
         String imagePath = phase ? IMG_PLAYER_PHASE2 : IMG_PLAYER;
         setImage(new ImageIcon(imagePath).getImage());
@@ -218,14 +247,20 @@ public class Player extends Sprite {
     }
 
     // Either implement or remove this
+
     @Override
+    // Either implement or remove this
     public void act() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'act'");
     }
 
-    public Rectangle getBounds() {
-        return new Rectangle(x, y, 128, 128); // or whatever size your player sprite is
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
     }
     
 }
