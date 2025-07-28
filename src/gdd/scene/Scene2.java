@@ -635,34 +635,40 @@ public class Scene2 extends JPanel {
         int boxX = 10; // 10px from left edge
         int boxY = 10; // 10px from top
 
-        // Get current health (assuming player is accessible)
-        int currentHealth = player.getHealth();
-        int maxHealth = 100; // Or whatever your max health is
+        // Score box dimensions and position (right of health)
+        int scoreBoxWidth = 120;
+        int scoreBoxX = boxX + boxWidth + 10; // 10px right of health bar
 
-        // Health percentage for color and bar width
+        // Get current health and score
+        int currentHealth = player.getHealth();
+        int maxHealth = 100;
         float healthPercent = (float) currentHealth / maxHealth;
 
-        // Health box background
-        g.setColor(new Color(30, 30, 40, 200)); // Semi-transparent dark
+        // Draw health box background
+        g.setColor(new Color(30, 30, 40, 200));
         g.fillRoundRect(boxX, boxY, boxWidth, boxHeight, 5, 5);
 
-        // Health bar (color changes based on health)
+        // Draw score box background
+        g.fillRoundRect(scoreBoxX, boxY, scoreBoxWidth, boxHeight, 5, 5);
+
+        // Health bar
         Color healthColor;
         if (healthPercent > 0.6f) {
-            healthColor = new Color(100, 220, 100); // Green
+            healthColor = new Color(100, 220, 100);
         } else if (healthPercent > 0.3f) {
-            healthColor = new Color(220, 220, 100); // Yellow
+            healthColor = new Color(220, 220, 100);
         } else {
-            healthColor = new Color(220, 100, 100); // Red
+            healthColor = new Color(220, 100, 100);
         }
 
         int barWidth = (int) ((boxWidth - 4) * healthPercent);
         g.setColor(healthColor);
         g.fillRoundRect(boxX + 2, boxY + 2, barWidth, boxHeight - 4, 3, 3);
 
-        // Health box border
+        // Borders
         g.setColor(new Color(200, 200, 200, 150));
         g.drawRoundRect(boxX, boxY, boxWidth, boxHeight, 5, 5);
+        g.drawRoundRect(scoreBoxX, boxY, scoreBoxWidth, boxHeight, 5, 5);
 
         // Health text
         g.setColor(Color.WHITE);
@@ -673,11 +679,26 @@ public class Scene2 extends JPanel {
         int textX = boxX + (boxWidth - fm.stringWidth(healthText)) / 2;
         int textY = boxY + (boxHeight + fm.getAscent() - fm.getDescent()) / 2;
 
-        // Text shadow for better readability
+        // Score text (with coin icon)
+        String scoreText = "Score: " + score;
+        int scoreTextX = scoreBoxX + 25; // Leave space for icon
+        int scoreTextY = textY;
+
+        // Draw coin icon
+        int coinSize = 20;
+        g.setColor(new Color(255, 215, 0)); // Gold color
+        g.fillOval(scoreBoxX + 3, boxY + (boxHeight - coinSize) / 2, coinSize, coinSize);
+        g.setColor(new Color(200, 160, 0));
+        g.drawOval(scoreBoxX + 3, boxY + (boxHeight - coinSize) / 2, coinSize, coinSize);
+
+        // Text shadows
         g.setColor(new Color(0, 0, 0, 150));
         g.drawString(healthText, textX + 1, textY + 1);
+        g.drawString(scoreText, scoreTextX + 1, scoreTextY + 1);
 
+        // Main text
         g.setColor(Color.WHITE);
         g.drawString(healthText, textX, textY);
-    }    
+        g.drawString(scoreText, scoreTextX, scoreTextY);
+    }
 }
