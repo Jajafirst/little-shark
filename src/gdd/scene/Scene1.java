@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import gdd.sprite.Enemy1;
 import gdd.sprite.Enemy2;
 import gdd.sprite.Player;
+import gdd.sprite.Shot;
 import gdd.powerup.SpeedUp;
 import gdd.Game;
 
@@ -53,6 +54,8 @@ public class Scene1 extends JPanel {
     private List<Enemy2> enemies = new ArrayList<>();
     private List<Enemy1> enemy1List = new ArrayList<>();
 
+    private List<Shot> shots = new ArrayList<>();
+
     public static void setCollectedLevel(int level) {
         lastCollectedLevel = level;
     }
@@ -76,6 +79,7 @@ public class Scene1 extends JPanel {
         gameInit();
         System.out.println("✅ Scene1 started");
 
+        
         timer = new Timer(DELAY, new GameCycle());
         timer.start();
     }
@@ -183,6 +187,31 @@ public class Scene1 extends JPanel {
             game.loadScene2();
         }
 
+        // player shots
+        // FIXME gonna need to add hit box for enemies
+        List<Shot> toRemovesShots = new ArrayList<>();
+        for (Shot shot : shots) {
+            if (shot.isVisible()) {
+                int shotX = shot.getX();
+                int shotY = shot.getY();
+
+                // Speed up shot
+                int x = shot.getX();
+                x += 8;
+
+                if (x > BOARD_WIDTH) {
+                    shot.die();
+                    System.out.println("🗑️ Shot removed (off-screen)");
+                } else {
+                    shot.setX(x);
+                }
+
+                if (!shot.isVisible()) {
+                    toRemovesShots.add(shot);
+                }
+            }
+        }
+        shots.removeAll(toRemovesShots);
     }
 
     public void draw(Graphics g) {
@@ -208,6 +237,7 @@ public class Scene1 extends JPanel {
 
         // Draw player on top
         drawPlayer(g);
+        drawShots(g);
 
         // Speed Icon
         drawPowerUpUI(g);
@@ -230,6 +260,14 @@ public class Scene1 extends JPanel {
 
     }
 
+    public void drawShots(Graphics g) {
+        for (Shot shot : shots) {
+            if (shot.isVisible()) {
+                g.drawImage(shot.getImage(), shot.getX(), shot.getY(), this);
+            }
+        }
+    }
+
     private class TAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
@@ -239,9 +277,12 @@ public class Scene1 extends JPanel {
 
             int key = e.getKeyCode();
 
-            if (key == KeyEvent.VK_SPACE) {
+            if (key == KeyEvent.VK_0) {
                 System.out.println("🔁 Switching to Scene2...");
                 game.loadScene2();
+            }
+            if (key == KeyEvent.VK_SPACE && shots.size() < 4) {
+                shots.add(new Shot(x ,y));
             }
 
         }

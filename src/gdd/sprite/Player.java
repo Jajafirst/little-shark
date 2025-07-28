@@ -1,5 +1,6 @@
 // FIXME
 // - the switching animation is not smooth yet, maybe change to be switch case might help.
+// - when shooting, the system shoots but the player doesn't change to shooting animation immediately.
 
 package gdd.sprite;
 
@@ -27,7 +28,16 @@ public class Player extends Sprite {
     private boolean upPressed, downPressed;
 
     private boolean shoot;
-    
+
+    private String action = WALK; // Default action
+
+    private static final String WALK = "walk";
+    private static final String SHOOT = "shoot";
+    private static final String HURT = "hurt";
+    private static final String DIE = "die";
+
+    private boolean isShooting = false;
+
     // Animation
     public int frame = 0;
     private int animationDelay = 0;
@@ -42,16 +52,33 @@ public class Player extends Sprite {
         new Rectangle(480, 0, 120, 64), // Frame 4
 
         // Walking
-        new Rectangle(0, 64, 120, 64),  // Frame 5
-        new Rectangle(120, 64, 120, 64),  // Frame 6
-        new Rectangle(240, 64, 120, 64),  // Frame 7
-        new Rectangle(360, 64, 120, 64),  // Frame 8
-        new Rectangle(480, 64, 120, 64)   // Frame 9
+        new Rectangle(0, 504, 120, 63),  // Frame 0
+        new Rectangle(120, 504, 120, 63),  // Frame 1
+        new Rectangle(240, 504, 120, 63),  // Frame 2
+        new Rectangle(360, 504, 120, 63),  // Frame 3
+        new Rectangle(480, 504, 120, 63),  // Frame 4
+
+        // Shooting
+        new Rectangle(0, 61, 120, 61),  // Frame 5
+        new Rectangle(120, 61, 120, 61), // Frame 6
+        new Rectangle(240, 61, 120, 61), // Frame 7
+        new Rectangle(360, 61, 120, 61), // Frame 8
+
+        // hurting
+        new Rectangle(0, 322, 120, 62), // Frame 9
+        new Rectangle(120, 322, 120, 62), // Frame 10
+
+        //dying
+        new Rectangle(0, 241, 120, 81), // Frame 11
+        new Rectangle(120, 241, 120, 81), // Frame 12
+        new Rectangle(240, 241, 120, 81), // Frame 13
+        new Rectangle(360, 241, 120, 81), // Frame 14
+        new Rectangle(480, 241, 120, 81) // Frame 15
+
     };
 
     public Player() {
         initPlayer();
-        System.out.println("‼️ Player initialized");
     }
 
     private void initPlayer() {
@@ -77,13 +104,35 @@ public class Player extends Sprite {
         if (animationDelay >= ANIMATION_SPEED) {
             animationDelay = 0;
 
-            if (shoot) {
-                frame = (frame + 1) % 5; // Loop through frames 0-4
-                clipNo = frame; // Use frames 0-4 for shooting
+
+            /* if (shoot) {
+                frame = (frame + 1) % 4 + 5; // Loop through frames 5-8 for shooting
+                clipNo = frame; // Use frames 5-9 for shooting
                 shoot = false; // Reset shoot after one frame
             } else {
-                frame = (frame + 1) % 5 + 5; // Loop through frames 5-9 for walking
-                clipNo = frame; // Use frames 5-9 for walking
+                frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
+                clipNo = frame; // Use frames 0-4 for walking
+            } */
+
+            switch (action) {
+                case WALK:
+                    frame = (frame + 1) % 5; // Loop through frames 0-4 for walking
+                    clipNo = frame; // Use frames 0-4 for walking
+                    break;
+
+                case SHOOT:
+                    frame = (frame + 1) % 4 + 5; // Loop through frames 5-8 for shooting
+                    clipNo = frame; // Use frames 5-8 for shooting
+                    action = WALK; // Reset action to WALK after shooting
+                    break;
+
+                case HURT:
+                    frame = (frame + 1) % 2 + 9; // Loop through frames 9-15 for hurting
+                    clipNo = frame; // Use frames 9-15 for hurting
+                    break;
+
+                default:
+                    break;
             }
         }
     }
@@ -92,8 +141,18 @@ public class Player extends Sprite {
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
-        if (key == KeyEvent.VK_RIGHT) {
-            shoot = true;
+        switch (key) {
+            case KeyEvent.VK_RIGHT:
+                action = SHOOT;
+                System.out.println("🏀Shooting action triggered");
+                break;
+
+            case KeyEvent.VK_1:
+                action = HURT;
+                break;
+                
+            default:
+                break;
         }
 
         if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
@@ -108,11 +167,26 @@ public class Player extends Sprite {
 
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
+        
         if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
             upPressed = false;
         }
         if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
             downPressed = false;
+        }
+
+        switch (key) {
+            /* case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+                action = WALK; // Reset action to WALK when UP or DOWN is released
+                break; */
+            
+            case KeyEvent.VK_RIGHT:
+                action = WALK; // Reset action to WALK when RIGHT is released
+                break;
+        
+            default:
+                break;
         }
     }
 
@@ -144,11 +218,14 @@ public class Player extends Sprite {
     }
 
     // Either implement or remove this
+    @Override
     public void act() {
-        // Optional: Add behavior here if needed
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'act'");
     }
 
     public Rectangle getBounds() {
         return new Rectangle(x, y, 128, 128); // or whatever size your player sprite is
     }
+    
 }
