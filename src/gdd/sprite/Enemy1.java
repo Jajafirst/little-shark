@@ -5,11 +5,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class Enemy1 extends Sprite {
+
     private int x, y;
     private final int speed = 2;
 
@@ -21,13 +20,23 @@ public class Enemy1 extends Sprite {
     private int animationCounter = 0;
     private final int animationDelay = 8;
 
-    private List<EnemyBullet> bullets = new ArrayList<>();
     private long lastShotTime = 0;
     private static final int SHOT_INTERVAL = 2000; // 2 seconds
 
     private static BufferedImage[] sharedFramesEnemy1 = null;
 
     private boolean hasHitPlayer = false;
+
+    // 🔫 Shoot listener interface
+    public interface ShootListener {
+        void spawnBullet(EnemyBullet bullet);
+    }
+
+    private ShootListener onShootListener;
+
+    public void setShootListener(ShootListener listener) {
+        this.onShootListener = listener;
+    }
 
     public boolean hasHitPlayer() {
         return hasHitPlayer;
@@ -37,7 +46,7 @@ public class Enemy1 extends Sprite {
         this.hasHitPlayer = hasHitPlayer;
     }
 
-    //_____________________________________
+    // _____________________________________
     public Enemy1(int panelWidth, int panelHeight) {
         this.x = panelWidth + new Random().nextInt(300); // appear offscreen
         this.y = new Random().nextInt(panelHeight - drawHeight - 50);
@@ -83,34 +92,21 @@ public class Enemy1 extends Sprite {
             frameIndex = (frameIndex + 1) % frames.length;
         }
 
-        // Fire two bullets
+        // 🔫 Fire bullets using the listener
         long now = System.currentTimeMillis();
-        if (now - lastShotTime > SHOT_INTERVAL) {
-            bullets.add(new EnemyBullet(x, y + drawHeight / 3)); // upper bullet
-            bullets.add(new EnemyBullet(x, y + 2 * drawHeight / 3)); // lower bullet
+        if (now - lastShotTime > SHOT_INTERVAL && onShootListener != null) {
+            onShootListener.spawnBullet(new EnemyBullet(x, y + drawHeight / 3));
+            onShootListener.spawnBullet(new EnemyBullet(x, y + 2 * drawHeight / 3));
             lastShotTime = now;
         }
-
-        // Update bullets
-        bullets.removeIf(b -> {
-            b.update();
-            return b.getX() < -20;
-        });
-    }   
+    }
 
     public void draw(Graphics g, Component c) {
         if (frames != null && frames[frameIndex] != null) {
             Graphics2D g2d = (Graphics2D) g;
             g2d.drawImage(frames[frameIndex], x + drawWidth, y, -drawWidth, drawHeight, c);
         }
-
-        for (EnemyBullet bullet : bullets) {
-            bullet.draw(g, c);
-        }
-    }
-
-    public List<EnemyBullet> getBullets() {
-        return bullets;
+        // ❌ Removed bullet drawing from here
     }
 
     public Rectangle getBounds() {
@@ -131,7 +127,6 @@ public class Enemy1 extends Sprite {
 
     @Override
     public void act() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'act'");
+        // Not used
     }
 }

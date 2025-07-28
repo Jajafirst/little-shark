@@ -12,6 +12,7 @@ public class EnemyBullet {
     private final int width = 32;
     private final int height = 32;
     private BufferedImage image;
+    private boolean visible;
 
     public EnemyBullet(int x, int y) {
         this.x = x;
@@ -37,6 +38,30 @@ public class EnemyBullet {
             g.drawImage(image, x, y, width, height, c);
         }
     }
+
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
+    }
+    
+    public boolean isVisible() {
+        return visible; // You should have this flag
+    }
+    
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
+    //_____________________
+    private boolean hasHitPlayer = false;
+
+    public boolean hasHitPlayer() {
+        return hasHitPlayer;
+    }
+
+    public void setHasHitPlayer(boolean hasHitPlayer) {
+        this.hasHitPlayer = hasHitPlayer;
+    }
+
 
     public int getX() { return x; }
     public int getWidth() { return width; }
