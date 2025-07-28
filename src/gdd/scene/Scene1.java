@@ -181,6 +181,7 @@ public class Scene1 extends JPanel {
         }
 
         player.update();
+        updateShots();
 
         // Auto switch to Scene2 when done
         if (!switchedToScene2 && currentSpeedLevel >= 4 && speedUp == null) {
@@ -188,47 +189,6 @@ public class Scene1 extends JPanel {
             System.out.println("✅ All SpeedUps collected! Switching scene...");
             game.loadScene2(player.getHealth());
         }
-
-        // player shots
-        List<Shot> toRemovesShots = new ArrayList<>();
-        for (Shot shot : shots) {
-            if (shot.isVisible()) {
-
-                // Kill enemy1 when shot hits
-                for (Enemy1 enemy1 : enemy1List) {
-                    if (enemy1.getBounds().intersects(shot.getBounds())) {
-                        enemy1List.remove(enemy1);
-                        toRemovesShots.add(shot);
-                        break; // Exit loop after hit
-                    }
-                }
-                // Kill enemy2 when shot hits
-                for (Enemy2 enemy2 : enemy2List) {
-                    if (enemy2.getBounds().intersects(shot.getBounds())) {
-                        enemy2List.remove(enemy2);
-                        toRemovesShots.add(shot);
-                        break; // Exit loop after hit
-                    }
-                }
-
-                // Speed up shot
-                int x = shot.getX();
-                x += 8;
-
-                if (x > BOARD_WIDTH) {
-                    shot.die();
-                    System.out.println("🗑️ Shot removed (off-screen)");
-                } else {
-                    shot.setX(x);
-                }
-
-                if (!shot.isVisible()) {
-                    toRemovesShots.add(shot);
-                }
-            }
-        }
-        shots.removeAll(toRemovesShots);
-
 
         // Player hitbox check - modified to only reduce health once per collision
         for (Enemy2 enemy2 : enemy2List) {
@@ -296,6 +256,48 @@ public class Scene1 extends JPanel {
         // Speed Icon
         drawPowerUpUI(g);
         drawEnemies(g);
+    }
+
+    public void updateShots() {
+        // player shots
+        List<Shot> toRemovesShots = new ArrayList<>();
+        for (Shot shot : shots) {
+            if (shot.isVisible()) {
+
+                // Kill enemy1 when shot hits
+                for (Enemy1 enemy1 : enemy1List) {
+                    if (enemy1.getBounds().intersects(shot.getBounds())) {
+                        enemy1List.remove(enemy1);
+                        toRemovesShots.add(shot);
+                        break; // Exit loop after hit
+                    }
+                }
+                // Kill enemy2 when shot hits
+                for (Enemy2 enemy2 : enemy2List) {
+                    if (enemy2.getBounds().intersects(shot.getBounds())) {
+                        enemy2List.remove(enemy2);
+                        toRemovesShots.add(shot);
+                        break; // Exit loop after hit
+                    }
+                }
+
+                // Speed up shot
+                int x = shot.getX();
+                x += 8;
+
+                if (x > BOARD_WIDTH) {
+                    shot.die();
+                    System.out.println("🗑️ Shot removed (off-screen)");
+                } else {
+                    shot.setX(x);
+                }
+
+                if (!shot.isVisible()) {
+                    toRemovesShots.add(shot);
+                }
+            }
+        }
+        shots.removeAll(toRemovesShots);
     }
 
     public void drawEnemies(Graphics g) {
