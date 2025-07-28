@@ -69,7 +69,7 @@ public class Scene1 extends JPanel {
     }
 
     private Random rand = new Random();
-    public int score = 0;
+    public static int score = 0;
     private boolean inGame = true;
 
     // ____________________________________________
@@ -199,31 +199,29 @@ public class Scene1 extends JPanel {
         player.update();
         updateShots();
         playerHitBot();
-
-        // Auto switch to Scene2 when done
-        if (!switchedToScene2 && currentSpeedLevel >= 4 && speedUp == null) {
-            switchedToScene2 = true;
-            System.out.println("✅ All SpeedUps collected! Switching scene...");
-            game.loadScene2(player.getHealth());
-        }
     }
 
     public void playerHitBot() {
         // Player hitbox check - modified to only reduce health once per collision
+        List<Enemy2> toRemovesEnemy2 = new ArrayList<>();
         for (Enemy2 enemy2 : enemy2List) {
-            if (enemy2.getBounds()
-                    .intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
-                // Only reduce health if this enemy hasn't hit the player before
+            if (enemy2.getBounds().intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
                 if (!enemy2.hasHitPlayer()) {
                     player.setHealth(player.getHealth() - 10);
                     enemy2.setHasHitPlayer(true); // Mark this enemy as having hit the player
-                    System.out.println("💥 Player hit! Health: " + player.getHealth());
+
+                    player.setHurt(true); // Mark player as hurt
+                    
+                    toRemovesEnemy2.add(enemy2); // Remove enemy2 after hit
                 }
             } else {
                 // Reset the flag when the enemy is no longer colliding
                 enemy2.setHasHitPlayer(false);
             }
-        }
+        } 
+        enemy2List.removeAll(toRemovesEnemy2);
+
+        List<Enemy1> toRemovesEnemy1 = new ArrayList<>();
         for (Enemy1 enemy1 : enemy1List) {
             if (enemy1.getBounds()
                     .intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
@@ -231,28 +229,36 @@ public class Scene1 extends JPanel {
                 if (!enemy1.hasHitPlayer()) {
                     player.setHealth(player.getHealth() - 10);
                     enemy1.setHasHitPlayer(true); // Mark this enemy as having hit the player
-                    System.out.println("💥 Player hit! Health: " + player.getHealth());
+
+                    player.setHurt(true); // Mark player as hurt
+
+                    toRemovesEnemy1.add(enemy1); // Remove enemy1 after hit
                 }
             } else {
                 // Reset the flag when the enemy is no longer colliding
                 enemy1.setHasHitPlayer(false);
             }
         }
+        enemy1List.removeAll(toRemovesEnemy1);
 
         // Check if player is hit by enemy bullets
+        List<EnemyBullet> toRemovesBullets = new ArrayList<>();
         for (EnemyBullet bullet : enemyBullets) {
             if (bullet.getBounds().intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
                 if (!bullet.hasHitPlayer()) {
                     player.setHealth(player.getHealth() - 5);
                     bullet.setVisible(false);
                     bullet.setHasHitPlayer(true);
-                    System.out.println("🔫 Player hit by bullet! Health: " + player.getHealth());
+
+                    player.setHurt(true); // Mark player as hurt
+
+                    toRemovesBullets.add(bullet); // Remove bullet after hit
                 }
             } else {
                 bullet.setHasHitPlayer(false);
             }
         }
-
+        enemyBullets.removeAll(toRemovesBullets);
     }
 
     // ____________________________________________
@@ -277,10 +283,6 @@ public class Scene1 extends JPanel {
             speedUp.draw(g, this);
         }
 
-        for (EnemyBullet bullet : enemyBullets) {
-            bullet.draw(g, this);
-        }
-
         // Draw player on top
         drawPlayer(g);
         drawShots(g);
@@ -292,7 +294,7 @@ public class Scene1 extends JPanel {
         drawPlayerHealth(g);
 
         // Game Over screen
-        if (player.getHealth() <= 70) {
+        if (player.getHealth() <= 0 && inGame) {
             System.out.println("💀 Game Over");
             gameOver(g);
             inGame = false; // Stop the game loop
@@ -349,6 +351,10 @@ public class Scene1 extends JPanel {
         for (Enemy1 enemy1 : enemy1List) {
             enemy1.draw(g, this);
         }
+        for (EnemyBullet bullet : enemyBullets) {
+            bullet.draw(g, this);
+        }
+        
         for (Enemy2 enemy2 : enemy2List) {
             enemy2.draw(g, this);
         }
@@ -381,7 +387,7 @@ public class Scene1 extends JPanel {
 
             if (key == KeyEvent.VK_0) {
                 System.out.println("🔁 Switching to Scene2...");
-                game.loadScene2(player.getHealth());
+                game.loadScene2(player.getHealth(), score);
             }
 
             // Player shots

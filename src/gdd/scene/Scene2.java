@@ -56,6 +56,7 @@ public class Scene2 extends JPanel {
     // Enemies
     private List<Enemy1> enemy1List = new ArrayList<>();
     private List<Enemy2> enemy2List = new ArrayList<>();
+    // Enemy bullets
     private List<EnemyBullet> enemyBullets = new ArrayList<>();
 
     // Player shots
@@ -76,24 +77,28 @@ public class Scene2 extends JPanel {
         return lastCollectedLevel;
     }
 
+    private int score;
+    private boolean inGame = true;
+
+    //___________________________________________
     public Scene2(Game game) {
         this.game = game;
     }
 
-    public void start(int health) {
+    public void start(int health, int score) {
         addKeyListener(new TAdapter());
         setFocusable(true);
         requestFocusInWindow();
         setBackground(Color.black);
 
-        gameInit(health);
+        gameInit(health , score);
         System.out.println("✅ Scene2 started");
 
         timer = new Timer(DELAY, new GameCycle());
         timer.start();
     }
 
-    private void gameInit(int health) {
+    private void gameInit(int health, int score) {
         // load parallax
         ImageIcon parallaxIcon = new ImageIcon("./src/assets/background/final-scene2.png");
         parallaxBg = parallaxIcon.getImage();
@@ -104,6 +109,8 @@ public class Scene2 extends JPanel {
 
         player = new Player();
         player.setHealth(health);
+
+        this.score = score;
     }
 
     public void update() {
@@ -196,6 +203,8 @@ public class Scene2 extends JPanel {
             }
         }
         player.update();
+        updateShots();
+        playerHitBot();
 
         // Boss
         if (!bossSpawned && currentPowerLevel >= 4) {
@@ -232,65 +241,29 @@ public class Scene2 extends JPanel {
             }
         }
 
-        // player shots
-        List<Shot> toRemovesShots = new ArrayList<>();
-        for (Shot shot : shots) {
-            if (shot.isVisible()) {
+    }
 
-                // Kill enemy1 when shot hits
-                for (Enemy1 enemy1 : enemy1List) {
-                    if (enemy1.getBounds().intersects(shot.getBounds())) {
-                        enemy1List.remove(enemy1);
-                        toRemovesShots.add(shot);
-                        break; // Exit loop after hit
-                    }
-                }
-                // Kill enemy2 when shot hits
-                for (Enemy2 enemy2 : enemy2List) {
-                    if (enemy2.getBounds().intersects(shot.getBounds())) {
-                        enemy2List.remove(enemy2);
-                        toRemovesShots.add(shot);
-                        break; // Exit loop after hit
-                    }
-                }
-
-                // Speed up shot
-                int x = shot.getX();
-                x += 8;
-
-                if (x > BOARD_WIDTH) {
-                    shot.die();
-                    System.out.println("🗑️ Shot removed (off-screen)");
-                } else {
-                    shot.setX(x);
-                }
-
-                if (!shot.isVisible()) {
-                    toRemovesShots.add(shot);
-                }
-            }
-        }
-        shots.removeAll(toRemovesShots);
-
+    public void playerHitBot() {
         // Player hitbox check - modified to only reduce health once per collision
+        List<Enemy2> toRemovesEnemy2 = new ArrayList<>();
         for (Enemy2 enemy2 : enemy2List) {
-            if (enemy2.getBounds()
-                    .intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
-                // Only reduce health if this enemy hasn't hit the player before
+            if (enemy2.getBounds().intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
                 if (!enemy2.hasHitPlayer()) {
                     player.setHealth(player.getHealth() - 10);
                     enemy2.setHasHitPlayer(true); // Mark this enemy as having hit the player
-                    System.out.println("💥 Player hit! Health: " + player.getHealth());
-                    if (player.getHealth() <= 0) {
-                        System.out.println("💀 Player died!");
-                        // Handle player death (e.g., game over)
-                    }
+
+                    player.setHurt(true); // Mark player as hurt
+                    
+                    toRemovesEnemy2.add(enemy2); // Remove enemy2 after hit
                 }
             } else {
                 // Reset the flag when the enemy is no longer colliding
                 enemy2.setHasHitPlayer(false);
             }
-        }
+        } 
+        enemy2List.removeAll(toRemovesEnemy2);
+
+        List<Enemy1> toRemovesEnemy1 = new ArrayList<>();
         for (Enemy1 enemy1 : enemy1List) {
             if (enemy1.getBounds()
                     .intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
@@ -298,19 +271,39 @@ public class Scene2 extends JPanel {
                 if (!enemy1.hasHitPlayer()) {
                     player.setHealth(player.getHealth() - 10);
                     enemy1.setHasHitPlayer(true); // Mark this enemy as having hit the player
-                    System.out.println("💥 Player hit! Health: " + player.getHealth());
-                    if (player.getHealth() <= 0) {
-                        System.out.println("💀 Player died!");
-                        // Handle player death (e.g., game over)
-                    }
+
+                    player.setHurt(true); // Mark player as hurt
+
+                    toRemovesEnemy1.add(enemy1); // Remove enemy1 after hit
                 }
             } else {
                 // Reset the flag when the enemy is no longer colliding
                 enemy1.setHasHitPlayer(false);
             }
         }
+        enemy1List.removeAll(toRemovesEnemy1);
+
+        // Check if player is hit by enemy bullets
+        List<EnemyBullet> toRemovesBullets = new ArrayList<>();
+        for (EnemyBullet bullet : enemyBullets) {
+            if (bullet.getBounds().intersects(new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight()))) {
+                if (!bullet.hasHitPlayer()) {
+                    player.setHealth(player.getHealth() - 5);
+                    bullet.setVisible(false);
+                    bullet.setHasHitPlayer(true);
+
+                    player.setHurt(true); // Mark player as hurt
+
+                    toRemovesBullets.add(bullet); // Remove bullet after hit
+                }
+            } else {
+                bullet.setHasHitPlayer(false);
+            }
+        }
+        enemyBullets.removeAll(toRemovesBullets);
     }
 
+    // ____________________________________________
     public void draw(Graphics g) {
         if (staticBg != null) {
             g.drawImage(staticBg, 0, 0, BOARD_WIDTH, BOARD_HEIGHT, null);
@@ -336,6 +329,8 @@ public class Scene2 extends JPanel {
         drawPowerUpUI(g);
         drawEnemies(g);
 
+        drawPlayerHealth(g);
+
         for (BossBullet bullet : bossBullets) {
             bullet.draw(g, this);
         }
@@ -343,6 +338,59 @@ public class Scene2 extends JPanel {
         for (EnemyBullet bullet : enemyBullets) {
             bullet.draw(g, this);
         }
+
+        // Game Over screen
+        if (player.getHealth() <= 0 && inGame) {
+            System.out.println("💀 Game Over");
+            gameOver(g);
+            inGame = false; // Stop the game loop
+            timer.stop();
+            return;
+        }
+    }
+
+    public void updateShots() {
+        // player shots
+        List<Shot> toRemovesShots = new ArrayList<>();
+        for (Shot shot : shots) {
+            if (shot.isVisible()) {
+
+                // Kill enemy1 when shot hits
+                for (Enemy1 enemy1 : enemy1List) {
+                    if (enemy1.getBounds().intersects(shot.getBounds())) {
+                        enemy1List.remove(enemy1);
+                        toRemovesShots.add(shot);
+                        score += 20; // Increment score for enemy1 hit
+                        break; // Exit loop after hit
+                    }
+                }
+                // Kill enemy2 when shot hits
+                for (Enemy2 enemy2 : enemy2List) {
+                    if (enemy2.getBounds().intersects(shot.getBounds())) {
+                        enemy2List.remove(enemy2);
+                        toRemovesShots.add(shot);
+                        score += 10; // Increment score for enemy2 hit
+                        break; // Exit loop after hit
+                    }
+                }
+
+                // Speed up shot
+                int x = shot.getX();
+                x += 8;
+
+                if (x > BOARD_WIDTH) {
+                    shot.die();
+                    System.out.println("🗑️ Shot removed (off-screen)");
+                } else {
+                    shot.setX(x);
+                }
+
+                if (!shot.isVisible()) {
+                    toRemovesShots.add(shot);
+                }
+            }
+        }
+        shots.removeAll(toRemovesShots);
     }
 
     public void drawEnemies(Graphics g) {

@@ -43,6 +43,17 @@ public class Boss {
     private Random random = new Random();
     private Component boss;
 
+    private int clipNo = 0;
+    private final Rectangle[] clips = new Rectangle[] {
+        // Walking
+        new Rectangle(0, 0, 55, 96),  // Frame 0
+        new Rectangle(103, 0, 55, 96),  // Frame 1
+        new Rectangle(103, 0, 55, 96),  // Frame 1
+
+    };
+
+
+    //________________________________________________
     /** ✅ Constructor 1: Auto bottom alignment (only X) */
     public Boss(int x) {
         this.x = x;

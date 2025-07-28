@@ -143,6 +143,15 @@ public class Player extends Sprite {
         }
     }
 
+    public void setHurt(boolean hurt) {
+        this.isHurt = hurt;
+        if (hurt) {
+            this.action = HURT;
+            this.frame = 0; // Reset animation frame
+        }
+    }
+    
+    //_________________________Delay for shooting
     public boolean shootingDelay() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastShotTime >= SHOT_DELAY) {
@@ -151,12 +160,11 @@ public class Player extends Sprite {
             return false;
         }
     }
-
     public void setLastShotTime(long lastShotTime) {
         this.lastShotTime = lastShotTime;
     }
 
-    // Input handling
+    //__________________________
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
 
