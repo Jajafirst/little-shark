@@ -12,10 +12,10 @@ import java.util.Timer;
 import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
-    private static int speedY = 5; // Added default speed
+    private static int speedY = 3; // Added default speed
 
-  //  private static final int speedY = 5; // Added default speed
-    
+    // private static final int speedY = 5; // Added default speed
+
     // private Image image;
     private static final int START_X = 60;
     private static final int START_Y = 250;
@@ -47,40 +47,42 @@ public class Player extends Sprite {
     private final int ANIMATION_SPEED = 6; // Higher = slower animation
     private int clipNo = 0;
     private final Rectangle[] clips = new Rectangle[] {
-           
-        new Rectangle(0, 0, 120, 64),   // Frame 0
-        new Rectangle(120, 0, 120, 64), // Frame 1
-        new Rectangle(240, 0, 120, 64), // Frame 2
-        new Rectangle(360, 0, 120, 64), // Frame 3
-        new Rectangle(480, 0, 120, 64), // Frame 4
 
-        // Walking
-        new Rectangle(0, 504, 120, 63),  // Frame 0
-        new Rectangle(120, 504, 120, 63),  // Frame 1
-        new Rectangle(240, 504, 120, 63),  // Frame 2
-        new Rectangle(360, 504, 120, 63),  // Frame 3
-        new Rectangle(480, 504, 120, 63),  // Frame 4
+            new Rectangle(0, 0, 120, 64), // Frame 0
+            new Rectangle(120, 0, 120, 64), // Frame 1
+            new Rectangle(240, 0, 120, 64), // Frame 2
+            new Rectangle(360, 0, 120, 64), // Frame 3
+            new Rectangle(480, 0, 120, 64), // Frame 4
 
-        // Shooting
-        new Rectangle(0, 61, 120, 61),  // Frame 5
-        new Rectangle(120, 61, 120, 61), // Frame 6
-        new Rectangle(240, 61, 120, 61), // Frame 7
-        new Rectangle(360, 61, 120, 61), // Frame 8
+            // Walking
+            new Rectangle(0, 504, 120, 63), // Frame 0
+            new Rectangle(120, 504, 120, 63), // Frame 1
+            new Rectangle(240, 504, 120, 63), // Frame 2
+            new Rectangle(360, 504, 120, 63), // Frame 3
+            new Rectangle(480, 504, 120, 63), // Frame 4
 
-        // hurting
-        new Rectangle(0, 322, 120, 62), // Frame 9
-        new Rectangle(120, 322, 120, 62), // Frame 10
+            // Shooting
+            new Rectangle(0, 61, 120, 61), // Frame 5
+            new Rectangle(120, 61, 120, 61), // Frame 6
+            new Rectangle(240, 61, 120, 61), // Frame 7
+            new Rectangle(360, 61, 120, 61), // Frame 8
 
-        //dying
-        new Rectangle(0, 241, 120, 81), // Frame 11
-        new Rectangle(120, 241, 120, 81), // Frame 12
-        new Rectangle(240, 241, 120, 81), // Frame 13
-        new Rectangle(360, 241, 120, 81), // Frame 14
-        new Rectangle(480, 241, 120, 81) // Frame 15
+            // hurting
+            new Rectangle(0, 322, 120, 62), // Frame 9
+            new Rectangle(120, 322, 120, 62), // Frame 10
+
+            // dying
+            new Rectangle(0, 241, 120, 81), // Frame 11
+            new Rectangle(120, 241, 120, 81), // Frame 12
+            new Rectangle(240, 241, 120, 81), // Frame 13
+            new Rectangle(360, 241, 120, 81), // Frame 14
+            new Rectangle(480, 241, 120, 81) // Frame 15
 
     };
 
-    //____________________________________
+    private boolean reverseControls;
+
+    // ____________________________________
     public Player() {
         initPlayer();
     }
@@ -96,15 +98,25 @@ public class Player extends Sprite {
     }
 
     public void update() {
-        //_______Movement
-        if (upPressed) {
-            y = Math.max(0, y - speedY);
-        }
-        if (downPressed) {
-            y = Math.min(SCREEN_HEIGHT - getHeight(), y + speedY);
+        // _______Movement
+        if (!reverseControls) {
+            if (upPressed) {
+                y = Math.max(0, y - speedY);
+            }
+            if (downPressed) {
+                y = Math.min(SCREEN_HEIGHT - getHeight(), y + speedY);
+            }
+        } else {
+            // 🔄 Reversed: Up goes down, Down goes up
+            if (upPressed) {
+                y = Math.min(SCREEN_HEIGHT - getHeight(), y + speedY);
+            }
+            if (downPressed) {
+                y = Math.max(0, y - speedY);
+            }
         }
 
-        //_______Animation
+        // _______Animation
         animationDelay++;
         if (animationDelay >= ANIMATION_SPEED) {
             animationDelay = 0;
@@ -171,7 +183,7 @@ public class Player extends Sprite {
             case KeyEvent.VK_SPACE:
                 if (shootingDelay()) {
                     isShooting = true;
-                }else {
+                } else {
                     isShooting = false;
                 }
                 break;
@@ -179,7 +191,7 @@ public class Player extends Sprite {
             case KeyEvent.VK_1:
                 isHurt = true;
                 break;
-                
+
             default:
                 break;
         }
@@ -196,7 +208,7 @@ public class Player extends Sprite {
 
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
-        
+
         if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
             upPressed = false;
         }
@@ -205,20 +217,22 @@ public class Player extends Sprite {
         }
 
         switch (key) {
-            /* case KeyEvent.VK_UP:
-            case KeyEvent.VK_DOWN:
-                action = WALK; // Reset action to WALK when UP or DOWN is released
-                break; */
-            
+            /*
+             * case KeyEvent.VK_UP:
+             * case KeyEvent.VK_DOWN:
+             * action = WALK; // Reset action to WALK when UP or DOWN is released
+             * break;
+             */
+
             case KeyEvent.VK_SPACE:
                 break;
-        
+
             default:
                 break;
         }
     }
 
-    //_____________________________________
+    // _____________________________________
     public void updatePlayer(boolean phase) {
         String imagePath = phase ? IMG_PLAYER_PHASE2 : IMG_PLAYER;
         setImage(new ImageIcon(imagePath).getImage());
@@ -262,5 +276,20 @@ public class Player extends Sprite {
     public void setHealth(int health) {
         this.health = health;
     }
-    
+
+    public void applySpeedLevel(int level) {
+        int[] SPEED_VALUES = { 5, 10, 15, 20 }; // LV1-LV4 speeds
+        if (level < 1)
+            level = 1;
+        if (level > 4)
+            level = 4;
+        speedY = SPEED_VALUES[level - 1];
+        System.out.println("🏎️ Player speed set to LV" + level + " (speedY=" + speedY + ")");
+    }
+
+    public void setReverseControls(boolean b) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setReverseControls'");
+    }
+
 }

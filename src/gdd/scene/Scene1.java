@@ -137,6 +137,7 @@ public class Scene1 extends JPanel {
             // Collected
             if (skillBox.intersects(playerBox)) {
                 currentSpeedLevel = speedUp.getLevel();
+                player.applySpeedLevel(currentSpeedLevel); // ✅ Apply movement speed when collected
                 updateSpeedIcon(currentSpeedLevel);
                 SpeedUp.setCollectedLevel(currentSpeedLevel);
                 speedUp = null;
