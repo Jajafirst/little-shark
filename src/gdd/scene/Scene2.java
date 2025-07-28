@@ -301,20 +301,25 @@ public class Scene2 extends JPanel {
         }
         enemyBullets.removeAll(toRemovesBullets);
 
-        //_____ Check if player is hit by boss bullets
-        if (boss != null && boss.isLaserActive()) {
-            Rectangle laserBounds = boss.getLaserBounds();
-            Rectangle playerBox = new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight());
+        // _____ Check if player is hit by boss laser
+        if (boss != null && boss.isLaserActive() && boss.isLaserFullyCharged()) {
+            Rectangle playerBox = new Rectangle(player.getX(), player.getY(),
+                    player.getWidth(), player.getHeight());
 
-            if (laserBounds.intersects(playerBox)) {
-                if (!boss.hasHitPlayerWithLaser()) { // Prevent multiple hits from same laser
-                    player.setHealth(player.getHealth() - 15); // Big damage from laser
+            if (boss.isPlayerHitByLaser(playerBox)) {
+                if (boss.canDamagePlayer()) {
+                    player.setHealth(player.getHealth() - 15);
                     player.setHurt(true);
-                    boss.setHasHitPlayerWithLaser(true); // Mark laser as having hit
+                    boss.registerDamage();
                     System.out.println("🔥 Player hit by laser! Health: " + player.getHealth());
+
+                    // Debug output
+                    System.out.println("Player at: " + playerBox);
+                    System.out.println("Laser from: " + (boss.getX() + boss.getWidth() - 40) + "," +
+                            (boss.getY() + boss.getHeight() / 4) + " to 0," +
+                            (int) ((boss.getY() + boss.getHeight() / 4) -
+                                    Math.tan(boss.getLaserAngle()) * (boss.getX() + boss.getWidth() - 40)));
                 }
-            } else {
-                boss.setHasHitPlayerWithLaser(false); // Reset when not intersecting
             }
         }
 
@@ -367,6 +372,7 @@ public class Scene2 extends JPanel {
         if (boss != null) {
             g.drawImage(boss.getImage(), boss.getX(), boss.getY(), this);
             drawBossHealth(g);
+            boss.drawLaser(g);
         }
         
 
@@ -378,16 +384,17 @@ public class Scene2 extends JPanel {
             bullet.draw(g, this);
         }
 
-        if (boss != null) {
-            boss.drawLaser(g);
+        if (boss != null && boss.isLaserActive() && !boss.isLaserFullyCharged()) {
+            // Draw warning indicator
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setColor(new Color(255, 200, 0, 150));
+            g2d.fillOval(boss.getX() - 20, boss.getY() - 20, 40, 40);
 
-            if (boss.isLaserActive()) {
-                Rectangle laserBounds = boss.getLaserBounds();
-                if ((new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight())).intersects(laserBounds)) {
-                    System.out.println("🔥 Player hit by laser!");
-                    // player.setDead(true);
-                }
-            }
+            // Draw exclamation mark
+            g2d.setColor(Color.RED);
+            g2d.setFont(new Font("Arial", Font.BOLD, 24));
+            g2d.drawString("!", boss.getX() - 5, boss.getY() + 8);
+            g2d.dispose();
         }
 
         // Game Over screen
@@ -398,9 +405,18 @@ public class Scene2 extends JPanel {
             timer.stop();
             return;
         }
+
+        if (win) {
+            // Draw win screen
+            System.out.println("🎉 You Win!");
+            gameWin(g);
+            inGame = false; // Stop the game loop
+            timer.stop();
+        }
     }
 
     private int shotSpeed = 8;
+    private boolean win = false;
     public void updateShots() {
         // player shots
         List<Shot> toRemovesShots = new ArrayList<>();
@@ -424,6 +440,21 @@ public class Scene2 extends JPanel {
                         score += 10; // Increment score for enemy2 hit
                         break; // Exit loop after hit
                     }
+                }
+
+                if (boss != null && boss.getBounds().intersects(shot.getBounds())) {
+                    boss.setHealth(boss.getHealth() - 10);
+                    toRemovesShots.add(shot);
+                    System.out.println("💥 Hit boss! Health: " + boss.getHealth());
+                    if (boss.getHealth() <= 0) {
+                        boss.setDying(true);
+                        win = true; // Set win condition
+                        System.out.println("🎉 Boss defeated!");
+                        // boss = null; // Remove boss when defeated
+                        score += 100; // Bonus for defeating boss
+
+                    }
+                    
                 }
 
                 // Speed up shot
@@ -481,6 +512,9 @@ public class Scene2 extends JPanel {
             if (key == KeyEvent.VK_0) {
                 boss = new Boss(BOARD_WIDTH - 210, 230);
             bossSpawned = true;
+            }
+            if (key == KeyEvent.VK_9) {
+                boss.setHealth(10);
             }
 
             // Player shots
@@ -790,4 +824,91 @@ public class Scene2 extends JPanel {
         String text = "BOSS: " + boss.getHealth() + "/1000";
         g.drawString(text, boxX + 10, boxY + 15);
     }
+
+    // _____________________________________________WIN
+    private void gameWin(Graphics g) {
+        // Semi-transparent light overlay
+        g.setColor(new Color(255, 255, 255, 160));
+        g.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+
+        // Animated stars (same method as gameOver)
+        drawAnimatedBackground(g);
+
+        // Box for win message
+        int boxWidth = BOARD_WIDTH - 100;
+        int boxHeight = 200;
+        int boxX = 50;
+        int boxY = BOARD_HEIGHT / 2 - boxHeight / 2;
+
+        // Gradient win box
+        GradientPaint gradient = new GradientPaint(
+                boxX, boxY, new Color(40, 80, 120),
+                boxX, boxY + boxHeight, new Color(20, 40, 60));
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setPaint(gradient);
+        g2d.fillRoundRect(boxX, boxY, boxWidth, boxHeight, 20, 20);
+
+        // Golden border
+        g2d.setStroke(new BasicStroke(3));
+        g2d.setColor(new Color(255, 215, 0, 150)); // Soft gold
+        g2d.drawRoundRect(boxX, boxY, boxWidth, boxHeight, 20, 20);
+        g2d.setColor(new Color(255, 240, 180));
+        g2d.drawRoundRect(boxX + 1, boxY + 1, boxWidth - 2, boxHeight - 2, 20, 20);
+
+        // Title: YOU WIN
+        Font titleFont = new Font("Impact", Font.BOLD, 48);
+        String title = "YOU WIN!";
+        g2d.setFont(titleFont);
+        FontMetrics fm = g2d.getFontMetrics();
+
+        // Shadow
+        g2d.setColor(new Color(0, 100, 0, 150));
+        g2d.drawString(title,
+                (BOARD_WIDTH - fm.stringWidth(title)) / 2 + 3,
+                boxY + 60 + 3);
+
+        // Gradient win text
+        GradientPaint textGradient = new GradientPaint(
+                BOARD_WIDTH / 2 - fm.stringWidth(title) / 2, boxY + 50,
+                new Color(144, 238, 144), // light green
+                BOARD_WIDTH / 2 + fm.stringWidth(title) / 2, boxY + 70,
+                new Color(0, 255, 127), // spring green
+                false);
+        g2d.setPaint(textGradient);
+        g2d.drawString(title,
+                (BOARD_WIDTH - fm.stringWidth(title)) / 2,
+                boxY + 60);
+
+        // Final Score
+        Font infoFont = new Font("Arial", Font.BOLD, 18);
+        g2d.setFont(infoFont);
+        fm = g2d.getFontMetrics();
+
+        String scoreText = "Final Score: " + score;
+        g2d.setColor(new Color(220, 255, 220));
+        g2d.drawString(scoreText,
+                (BOARD_WIDTH - fm.stringWidth(scoreText)) / 2,
+                boxY + 100);
+
+        // Instruction
+        Font msgFont = new Font("Arial", Font.PLAIN, 16);
+        g2d.setFont(msgFont);
+        fm = g2d.getFontMetrics();
+
+        String instruction = "Press R to play again or Q to quit";
+        g2d.setColor(new Color(200, 255, 200));
+        g2d.drawString(instruction,
+                (BOARD_WIDTH - fm.stringWidth(instruction)) / 2,
+                boxY + 140);
+
+        // Decorative (optional: draw a trophy icon or sparkle effect)
+        drawTrophyIcon(g2d, BOARD_WIDTH / 2, boxY + 170); // You can replace this with your own
+    }
+
+    private void drawTrophyIcon(Graphics2D g2d, int x, int y) {
+        g2d.setColor(new Color(255, 223, 0));
+        g2d.fillOval(x - 10, y - 10, 20, 20); // Trophy head
+        g2d.fillRect(x - 4, y + 10, 8, 10); // Trophy stem
+    }
+
 }
