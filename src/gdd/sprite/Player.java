@@ -36,7 +36,7 @@ public class Player extends Sprite {
 
     // Player Shots timing
     private long lastShotTime = 0;
-    private static final long SHOT_DELAY = 1000; // 1000 milliseconds (1 second) between player shots
+    private long SHOT_DELAY = 1000; // 1000 milliseconds (1 second) between player shots
 
     // Player Health
     private int health; // Example health value, adjust as needed
@@ -254,11 +254,19 @@ public class Player extends Sprite {
         throw new UnsupportedOperationException("Unimplemented method 'act'");
     }
 
+    // Health management
     public int getHealth() {
         return health;
     }
-
     public void setHealth(int health) {
         this.health = health;
+    }
+
+    // Shot delay management
+    public long getSHOT_DELAY() {
+        return SHOT_DELAY;
+    }
+    public void setSHOT_DELAY(long SHOT_DELAY) {
+        this.SHOT_DELAY = SHOT_DELAY;
     }
 }

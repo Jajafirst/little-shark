@@ -36,6 +36,7 @@ public class Global {
     public static final String IMG_EXPLOSION = "./src/assets/sprites/explosion.png";
     public static final String IMG_TITLE = "./src/assets/background/title.png";
     public static final String IMG_POWERUP_SPEEDUP = "src/images/powerup-s.png";
+    public static final String IMG_BOSS = "./src/assets/sprites/boss.png";
 
     public static final int PARALLAX_SCROLL_SPEED = 2;
 }

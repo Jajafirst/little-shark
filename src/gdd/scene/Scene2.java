@@ -207,10 +207,10 @@ public class Scene2 extends JPanel {
         playerHitBot();
 
         // Boss
-        if (!bossSpawned && currentPowerLevel >= 4) {
-            boss = new Boss(BOARD_WIDTH - 100, 195);
+        /* if (!bossSpawned && currentPowerLevel >= 4) {
+            boss = new Boss(BOARD_WIDTH - 60, 195);
             bossSpawned = true;
-        }
+        } */
 
         if (boss != null) {
             boss.setLaserActive(true); // keep laser logic
@@ -229,7 +229,6 @@ public class Scene2 extends JPanel {
                 bossBullets.add(new BossBullet(bulletX, randomY));
             }
 
-            // 🔄 Update bullets
             // 🔄 Update bullets
             Iterator<BossBullet> bulletIterator = bossBullets.iterator();
             while (bulletIterator.hasNext()) {
@@ -349,6 +348,7 @@ public class Scene2 extends JPanel {
         }
     }
 
+    private int shotSpeed = 8;
     public void updateShots() {
         // player shots
         List<Shot> toRemovesShots = new ArrayList<>();
@@ -376,7 +376,7 @@ public class Scene2 extends JPanel {
 
                 // Speed up shot
                 int x = shot.getX();
-                x += 8;
+                x += shotSpeed;
 
                 if (x > BOARD_WIDTH) {
                     shot.die();
@@ -426,9 +426,32 @@ public class Scene2 extends JPanel {
 
             int key = e.getKeyCode();
 
+            if (key == KeyEvent.VK_0) {
+                boss = new Boss(BOARD_WIDTH - 100, 195);
+            bossSpawned = true;
+            }
+
             // Player shots
             if (key == KeyEvent.VK_SPACE && shots.size() < 4 && player.shootingDelay()) {
-                shots.add(new Shot(x, y));
+                if (currentPowerLevel == 0) {
+                    shots.add(new Shot(x, y));
+                } else if (currentPowerLevel == 1) {
+                    shotSpeed = 12;
+                    shots.add(new Shot(x, y));
+                } else if (currentPowerLevel == 2) {
+                    shots.add(new Shot(x, y + 30));
+                    shots.add(new Shot(x, y));
+                } else if (currentPowerLevel == 3) {
+                    shots.add(new Shot(x, y + 30));
+                    shots.add(new Shot(x, y));
+                    shots.add(new Shot(x, y - 30));
+                } else if (currentPowerLevel == 4) {
+                    player.setSHOT_DELAY(500); // Faster shot delay
+                    shots.add(new Shot(x, y + 60));
+                    shots.add(new Shot(x, y + 30));
+                    shots.add(new Shot(x, y));
+                    shots.add(new Shot(x, y - 30));
+                }
                 player.setLastShotTime(System.currentTimeMillis());
             }
 

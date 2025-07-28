@@ -1,6 +1,11 @@
 package gdd.sprite;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+
+import static gdd.Global.IMG_BOSS;
+import static gdd.Global.IMG_PLAYER;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -77,7 +82,7 @@ public class Boss {
 
     private void loadSpriteSheet() {
         try {
-            spriteSheet = ImageIO.read(new File("src/assets/sprites/boss.png"));
+            var icon = new ImageIcon(IMG_PLAYER);
         } catch (IOException e) {
             System.out.println("❌ Failed to load boss sprite sheet");
             e.printStackTrace();
