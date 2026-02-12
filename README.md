@@ -6,8 +6,10 @@ Gulizara Benjapalaporn 6612233
 
 # Overview
 Shark Shooter is a 2D side-scrolling underwater shooter game built with Java Swing. Players control a shark, collect power-ups, shoot enemies, and fight a final boss with deadly laser attacks.
----
-Gameplay
+## Gameplay Video
+
+[![Shark Shooter Gameplay](https://img.youtube.com/vi/iiEagm2zak0/0.jpg)](https://www.youtube.com/watch?v=iiEagm2zak0&t=141s)
+
 
 	- 	Control the shark to dodge enemies and collect skills.
 	-	Shoot enemies to clear waves and survive.
